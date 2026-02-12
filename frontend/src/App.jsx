@@ -22,6 +22,7 @@ import MindfulExercises from "./pages/MindfulExercises";
 import DailyReset from "./pages/DailyReset";
 import Journal from "./pages/Journal";
 
+
 function Layout({ children }) {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
