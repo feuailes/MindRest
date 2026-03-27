@@ -1,0 +1,177 @@
+.login-wrapper {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  /* Very light soft blue/grey */
+}
+
+.login-card {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  /* Soft shadow like Open Heart */
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.title {
+  color: #1D4D4F;
+  /* Your Brand Teal */
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus {
+  border-color: #1D4D4F;
+  /* Teal border on click */
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #1D4D4F;
+  /* THE TEAL BUTTON */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.input-group {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  font-size: 0.75rem;
+  color: #1D4D4F;
+  cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.error-badge {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  border: 1px solid #fecaca;
+}
+
+/* Optional Spinner for the button */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.logout-btn {
+  background-color: #ff4d4d;
+  /* Soft Red */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.logout-btn:hover {
+  background-color: #ff3333;
+}
+
+.loading-text {
+  color: #1D4D4F;
+  /* Your Brand Teal */
+  font-weight: 600;
+  font-size: 1.1rem;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Fix for link styling */
+.text-link {
+  color: #1D4D4F;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.legal-text {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 24px;
+  line-height: 1.4;
+}
+
+.text-link {
+  color: #1D4D4F;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}

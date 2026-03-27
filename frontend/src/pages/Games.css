@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Instrument+Serif:italic@0,400&display=swap');
+
+.games-page {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #F8FAFB;
+  min-height: 100vh;
+}
+
+.italic-serif {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.game-card {
+  transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+.game-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px -15px rgba(29, 77, 79, 0.15);
+}
+
+/* Zen Sand Canvas */
+.canvas-container {
+  border-radius: 2rem;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.05);
+  background: #fdfaf6;
+  cursor: crosshair;
+}
+
+/* Memory Match Cards */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+@media (max-width: 600px) {
+  .memory-grid {
+    gap: 0.5rem;
+  }
+}
+
+.memory-card {
+  perspective: 1000px;
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+
+.memory-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.memory-card.flipped .memory-card-inner {
+  transform: rotateY(180deg);
+}
+
+.memory-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.memory-card-front {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.memory-card-back {
+  background: #1d4d4f;
+  color: white;
+  transform: rotateY(180deg);
+}
+
+.memory-card.matched .memory-card-inner {
+  transform: rotateY(180deg) scale(0.95);
+  opacity: 0.8;
+}
+
+.memory-card.matched .memory-card-back {
+  background: #e76f51;
+}
+
+/* Bubble Pop */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(209, 233, 255, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 15px rgba(29, 77, 79, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.6);
+  cursor: crosshair;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  transition: transform 0.1s;
+}
+
+.bubble:active {
+  transform: scale(0.9);
+}
+
+/* Smooth breathing animation */
+@keyframes breathing-anim {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.6);
+  }
+}
+
+.breathing-obj {
+  animation: breathing-anim 8s infinite ease-in-out;
+}

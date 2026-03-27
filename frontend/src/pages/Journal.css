@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Instrument+Serif:italic@0,400&display=swap');
+
+.journal-page {
+    --journal-primary: #1d4d4f;
+    --journal-accent: #f07654;
+    --journal-bg: #F8FAFB;
+    background-color: var(--journal-bg);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.journal-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 3rem;
+}
+
+.journal-header {
+    padding: 4rem 0 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.journal-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--journal-primary);
+    letter-spacing: -0.04em;
+}
+
+.italic-font {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.date-display {
+    color: var(--journal-accent);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+}
+
+.journal-main-card {
+    background: white;
+    border-radius: 3.5rem;
+    box-shadow: 0 40px 100px -20px rgba(29, 77, 79, 0.08);
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    min-height: 550px;
+    margin-top: 2rem;
+    overflow: hidden;
+}
+
+.prompt-sidebar {
+    background: #f0f4f4;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.notebook-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-textarea {
+    flex-grow: 1;
+    padding: 2.8rem 4rem;
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.75rem;
+    line-height: 2.8rem;
+    border: none;
+    outline: none;
+    resize: none;
+    background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+    background-size: 100% 2.8rem;
+    background-attachment: local;
+    color: #334155;
+}
+
+.journal-footer {
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: flex-end;
+    background: #fafafa;
+}
+
+/* MARQUEE SECTION */
+.marquee-section {
+    padding: 5rem 0;
+}
+
+.marquee-container {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+.marquee-track {
+    display: flex;
+    gap: 2rem;
+    width: max-content;
+}
+
+.premium-blog-card {
+    width: 350px;
+    background: white;
+    border-radius: 2.5rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.seal-button {
+    background: var(--journal-primary);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    display: flex;
+    gap: 0.5rem;
+    transition: 0.3s;
+}
+
+.seal-button:hover {
+    background: var(--journal-accent);
+    transform: translateY(-2px);
+}
