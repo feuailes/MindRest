@@ -141,7 +141,14 @@ export default function Assessment() {
             >
               ✕
             </button>
-            <PredictionPage passedRisk={risk} />
+            <PredictionPage 
+              passedRisk={risk} 
+              score={(inputs.screentime + inputs.sleep + inputs.stress + inputs.mood) / 4}
+              screenTime={inputs.screentime}
+              sleep={inputs.sleep}
+              stress={inputs.stress}
+              focus={11 - inputs.mood}
+            />
           </div>
         </div>
       )}

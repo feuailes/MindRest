@@ -11,20 +11,31 @@ export default function PredictionPage({ passedRisk = "", score = 0, screenTime 
   const sleepNum = Number(sleep) || 0;
   const stressNum = Number(stress) || 0;
 
-  // Animate gauge smoothly
+  // Animate gauge smoothly from 0 to target
   useEffect(() => {
-    const target = Math.min(Math.max(scoreNum * 10, 0), 100);
-    let current = 0;
-    const step = target / 30;
-    const interval = setInterval(() => {
-      current += step;
-      if (current >= target) {
-        current = target;
-        clearInterval(interval);
+    // 1-10 scale mapping to 0-100 percentage.
+    // 1.0 -> 0%, 10.0 -> 100%.
+    const targetValue = scoreNum <= 1 ? 0 : Math.min(((scoreNum - 1) / 9) * 100, 100);
+
+    let startTimestamp = null;
+    const duration = 1200; // 1.2 seconds for a soft, premium build-up
+
+    const animate = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+      // Easing function for a more premium interaction (easeOutExpo)
+      const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+      setAnimatedPercent(easedProgress * targetValue);
+
+      if (progress < 1) {
+        window.requestAnimationFrame(animate);
       }
-      setAnimatedPercent(current);
-    }, 15);
-    return () => clearInterval(interval);
+    };
+
+    const animationId = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(animationId);
   }, [scoreNum]);
 
   let contentKey = "Low";
@@ -114,7 +125,6 @@ export default function PredictionPage({ passedRisk = "", score = 0, screenTime 
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={dashOffset}
-              style={{ transition: "stroke-dashoffset 0.15s linear" }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
