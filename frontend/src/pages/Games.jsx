@@ -530,13 +530,13 @@ export default function GamesPage() {
                   <motion.img
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    src="/meditating-brain.png"
+                    src="/gaming-brain.png"
                     alt="Brain Mascot"
                     className="w-64 h-64 mb-10 object-contain"
                   />
                   <h2 className="text-6xl font-black text-[#1d4d4f] mb-4 italic-serif">Well Rested</h2>
                   <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-12">Session Complete</p>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-6 w-full">
                     <button
                       onClick={handleResetGame}

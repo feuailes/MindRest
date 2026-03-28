@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PredictionPage from "./Predictionpage";
+import { mlApi } from "../services/mlApi";
 
 export default function Assessment() {
   const [showPopup, setShowPopup] = useState(false);
@@ -7,22 +8,60 @@ export default function Assessment() {
   const [inputs, setInputs] = useState({
     screentime: 1, sleep: 1, stress: 1, mood: 1
   });
+  const [loading, setLoading] = useState(false);
 
+  // UI LABELS (Stay the same)
   const screenLabels = ["<2h", "2-4h", "4-6h", "6-8h", "8-10h", "10-12h", "12-14h", "14-16h", "16-18h", "18h+"];
   const sleepLabels = ["Great", "V.Good", "Good", "Fair", "Avg", "Poor", "V.Poor", "Bad", "Exhausted", "None"];
   const stressLabels = ["None", "V.Low", "Low", "Mild", "Mod", "High", "V.High", "Peak", "Burnout", "Extreme"];
   const moodLabels = ["Great", "Happy", "Good", "Stable", "Neutral", "Low", "Sad", "V.Low", "Bad", "Empty"];
 
-  const getPrediction = (e) => {
+  const getPrediction = async (e) => {
     e.preventDefault();
-    const { screentime, sleep, stress, mood } = inputs;
-    const totalScore = parseInt(screentime) + parseInt(sleep) + parseInt(stress) + parseInt(mood);
+    setLoading(true);
+    setShowPopup(false);
 
-    if (totalScore < 20) setRisk("Low Exhaustion");
-    else if (totalScore < 35) setRisk("Moderate");
-    else setRisk("High (Burnout Risk)");
+    try {
+      /** * MODEL MAPPING:
+       * High Exhaustion = High Screen + High Stress + High Sleep(Poor) + High Mood(Bad)
+       */
+      const mappedInputs = {
+        // 1. Screentime: 18h+ (index 10) maps to 18
+        screentime: [1, 3, 5, 7, 9, 11, 13, 15, 17, 18][inputs.screentime - 1],
 
-    setShowPopup(true);
+        // 2. Sleep: "None" (index 10) should be a HIGH score for exhaustion (10)
+        // "Great" (index 1) should be a LOW score (1)
+        sleep: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10][inputs.sleep - 1],
+
+        // 3. Stress: "Extreme" (index 10) maps to 10
+        stress: inputs.stress,
+
+        // 4. Mood: "Empty" (index 10) should be a HIGH score for exhaustion (10)
+        mood: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10][inputs.mood - 1]
+      };
+
+      console.log("Sending Mapped Data:", mappedInputs);
+
+      const response = await mlApi.getPrediction(mappedInputs);
+      const result = response.risk_label;
+
+      let mappedRisk = "Low Digital Exhaustion";
+      if (result === "High") {
+        mappedRisk = "High Digital Exhaustion (Burnout Risk)";
+      } else if (result === "Moderate") {
+        mappedRisk = "Moderate Digital Exhaustion";
+      }
+
+      setRisk(mappedRisk);
+      setShowPopup(true);
+
+    } catch (err) {
+      console.error("Prediction error:", err);
+      setRisk("Unable to calculate risk. Please check your connection.");
+      setShowPopup(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const ChoiceGrid = ({ label, id, list, currentVal }) => (
@@ -56,15 +95,9 @@ export default function Assessment() {
   );
 
   return (
-    /* flex-col min-h-screen ensures the background fills the page but follows the document flow */
     <div className="min-h-screen w-full bg-[#F5F7F9] flex flex-col font-sans overflow-hidden">
-
-      {/* Centering Container: flex-grow expands to push content to the dead center */}
       <div className="flex-grow flex items-center justify-center p-4">
-
         <div className="max-w-2xl w-full flex flex-col shadow-2xl bg-white border-t-[6px] border-[#1D4D4F]">
-
-          {/* Centered Heading */}
           <div className="p-6 border-b border-slate-100 text-center shrink-0">
             <h2 className="text-xl font-light text-[#1D4D4F] tracking-tight uppercase">
               MindRest <span className="font-bold">Assessment</span>
@@ -81,8 +114,12 @@ export default function Assessment() {
             <ChoiceGrid label="Current Mood" id="mood" list={moodLabels} currentVal={inputs.mood} />
 
             <div className="pt-4 shrink-0">
-              <button type="submit" className="w-full bg-[#E76F51] text-white py-3.5 font-bold text-xs uppercase tracking-widest hover:bg-[#cf5b3f] transition-all">
-                Generate Analysis
+              <button
+                type="submit"
+                className="w-full bg-[#E76F51] text-white py-3.5 font-bold text-xs uppercase tracking-widest hover:bg-[#cf5b3f] transition-all"
+                disabled={loading}
+              >
+                {loading ? "Analyzing..." : "Generate Analysis"}
               </button>
             </div>
           </form>
@@ -96,9 +133,14 @@ export default function Assessment() {
       </div>
 
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
           <div className="bg-white shadow-2xl relative max-w-lg w-full border-t-[6px] border-[#E76F51]">
-            <button onClick={() => setShowPopup(false)} className="absolute top-4 right-6 text-slate-400 hover:text-black font-light text-2xl">✕</button>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute top-4 right-6 text-slate-400 hover:text-black font-light text-2xl"
+            >
+              ✕
+            </button>
             <PredictionPage passedRisk={risk} />
           </div>
         </div>

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import DriftChart from "../components/Driftchart";
-import { dashboardService } from "../services/dashboardService";
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -9,8 +8,19 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await dashboardService.getData();
-        setData(res);
+        const token = localStorage.getItem("token");
+
+        const response = await fetch("http://127.0.0.1:8000/api/dashboard", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json"
+          },
+        });
+
+        const data = await response.json();
+        setData(data);
+
       } catch (err) {
         console.error("Failed to load dashboard", err);
       } finally {

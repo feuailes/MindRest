@@ -26,15 +26,28 @@ import Feedback from "./pages/Feedback";
 import Contact from "./pages/Contact";
 
 
+// ✅ ADD THIS HERE
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+}
+
+
 function Layout({ children }) {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
+  const isResultPage = location.pathname === "/result";
 
   return (
     <>
-      {!isLoginPage && <Header />}
+      {!isLoginPage && !isResultPage && <Header />}
       <main style={{ minHeight: "80vh" }}>{children}</main>
-      {!isLoginPage && <Footer />}
+      {!isLoginPage && !isResultPage && <Footer />}
     </>
   );
 }
@@ -47,7 +60,17 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/assessment" element={<Form />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* ✅ FIXED DASHBOARD ROUTE */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/result" element={<PredictionPage />} />
           <Route path="/games" element={<AllGamesCard />} />
           <Route path="/exercises" element={<MindfulExercises />} />

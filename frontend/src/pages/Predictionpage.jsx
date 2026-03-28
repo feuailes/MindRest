@@ -1,120 +1,164 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function PredictionPage({ passedRisk = "Low" }) {
-  const isHigh = passedRisk.includes("High");
-  const isLow = passedRisk.includes("Low");
-  const riskKey = isHigh ? "High" : isLow ? "Low" : "Moderate";
+export default function PredictionPage({ passedRisk = "", score = 0, screenTime = 0, focus = 0, sleep = 0, stress = 0 }) {
+  const navigate = useNavigate();
+  const [animatedPercent, setAnimatedPercent] = useState(0);
 
-  const theme = {
-    teal: "#1D4D4F",
-    orange: "#E76F51",
-    overlay: "rgba(0, 0, 0, 0.3)"
+  const scoreNum = Number(score) || 0;
+  const screenTimeNum = Number(screenTime) || 0;
+  const focusNum = Number(focus) || 0;
+  const sleepNum = Number(sleep) || 0;
+  const stressNum = Number(stress) || 0;
+
+  // Animate gauge smoothly
+  useEffect(() => {
+    const target = Math.min(Math.max(scoreNum * 10, 0), 100);
+    let current = 0;
+    const step = target / 30;
+    const interval = setInterval(() => {
+      current += step;
+      if (current >= target) {
+        current = target;
+        clearInterval(interval);
+      }
+      setAnimatedPercent(current);
+    }, 15);
+    return () => clearInterval(interval);
+  }, [scoreNum]);
+
+  let contentKey = "Low";
+  let themeColor = "#1D4D4F"; // Teal
+
+  if (scoreNum >= 8 || passedRisk.toLowerCase().includes("high")) {
+    contentKey = "High";
+    themeColor = "#ef4444"; // Red
+  } else if (scoreNum >= 4 || passedRisk.toLowerCase().includes("moderate")) {
+    contentKey = "Moderate";
+    themeColor = "#E76F51"; // Orange
+  }
+
+  const getReason = () => {
+    if (screenTimeNum > 6) return `${screenTimeNum}h Screen Usage`;
+    if (stressNum > 7) return "High stress levels";
+    if (sleepNum < 5) return "Not enough sleep";
+    if (focusNum < 4) return "Low focus";
+    return "Balanced routine";
   };
 
-  const riskConfig = {
-    High: {
-      label: "High Exhaustion",
-      percent: 90,
-      mitigations: [
-        { task: "Digital Detox", dur: "5m", icon: "🧠", type: "Mental Sanctuary" },
-        { task: "Launch Breathing Circle", dur: "Game", icon: "⭕", type: "Calm Engine", link: "/games" },
-        { task: "Neural Strain", icon: "📊", type: "ML Insight", desc: "High-beta brainwave patterns detected." }
-      ]
-    },
-    Moderate: {
-      label: "Moderate Fatigue",
-      percent: 50,
-      mitigations: [
-        { task: "Eye Palming", dur: "2m", icon: "👁️", type: "Visual Sanctuary" },
-        { task: "Focus Flow", dur: "Game", icon: "🌊", type: "Focus Engine", link: "/games" },
-        { task: "Recovery Insight", icon: "💡", type: "ML Insight", desc: "Micro-breaks restore 15% focus decay." }
-      ]
-    },
-    Low: {
-      label: "Low Exhaustion",
-      percent: 15,
-      mitigations: [
-        { task: "Posture Check", dur: "1m", icon: "🧘", type: "Physical Sanctuary" },
-        { task: "Launch Reaction Test", dur: "Game", icon: "⚡", type: "Reflex Engine", link: "/games" },
-        { task: "Steady Baseline", icon: "📈", type: "ML Insight", desc: "Digital vitals remain in optimal Alpha zone." }
-      ]
+  const getDynamicContent = () => {
+    if (contentKey === "High") {
+      return {
+        label: "High Digital Exhaustion",
+        sub: "Rest Immediately",
+        reason: getReason(),
+        explanation: "Your brain is very tired. Take a full break to recover.",
+        fixes: [
+          { type: "Physical", label: "Full Stretch", link: "/exercises" },
+          { type: "Mental", label: "Deep Breathing", link: "/games" },
+          { type: "Journal", label: "Brain Dump", link: "/journal" }
+        ]
+      };
     }
+    if (contentKey === "Moderate") {
+      return {
+        label: "Moderate Digital Exhaustion",
+        sub: "Take Short Breaks",
+        reason: getReason(),
+        explanation: "Your brain is a bit tired. Take small breaks to refresh.",
+        fixes: [
+          { type: "Visual", label: "Quick Eye Palming", link: "/exercises" },
+          { type: "Mental", label: "Focus Music", link: "/games" },
+          { type: "Journal", label: "Reflect", link: "/journal" }
+        ]
+      };
+    }
+    return {
+      label: "Low Digital Exhaustion",
+      sub: "You are fine",
+      reason: getReason(),
+      explanation: "Your brain is doing fine. Keep your current routine.",
+      fixes: [
+        { type: "Physical", label: "Posture Fix", link: "/exercises" },
+        { type: "Mental", label: "Mindful Check", link: "/games" },
+        { type: "Journal", label: "Gratitude", link: "/journal" }
+      ]
+    };
   };
 
-  const current = riskConfig[riskKey];
+  const content = getDynamicContent();
+  const radius = 40;
+  const circumference = Math.PI * radius;
+  const dashOffset = circumference - (circumference * (animatedPercent / 100));
 
   return (
-    /* pt-20 shifts the modal downward from the top of the screen */
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-24" style={{ backgroundColor: theme.overlay, backdropFilter: "blur(2px)" }}>
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-100/90 backdrop-blur-md font-sans">
 
-      <div className="bg-white p-8 font-sans w-full max-w-md rounded-[35px] shadow-2xl relative">
+      <div className="bg-white p-8 w-full max-w-md rounded-[40px] shadow-2xl relative border-b-4 transition-all"
+        style={{ borderBottomColor: themeColor }}>
 
-        {/* --- DYNAMIC ORANGE GAUGE --- */}
-        <div className="relative w-56 h-36 mx-auto mb-2">
-          <svg viewBox="0 0 100 70" className="w-full h-full">
+        {/* CLOSE BUTTON */}
+        <button onClick={() => navigate("/")} className="absolute top-6 right-8 text-slate-300 hover:text-red-400 transition-colors">
+          <span className="text-2xl font-light">×</span>
+        </button>
+
+        {/* GAUGE & SCORE */}
+        <div className="relative w-48 h-32 mx-auto mb-4">
+          <svg viewBox="0 0 100 65" className="w-full h-full">
             <path d="M 10 55 A 40 40 0 0 1 90 55" fill="none" stroke="#F1F5F9" strokeWidth="8" strokeLinecap="round" />
             <path
               d="M 10 55 A 40 40 0 0 1 90 55"
               fill="none"
-              stroke={theme.orange}
+              stroke={themeColor}
               strokeWidth="8"
               strokeLinecap="round"
-              strokeDasharray="125.6"
-              strokeDashoffset={125.6 - (125.6 * (current.percent / 100))}
-              style={{ transition: "stroke-dashoffset 1.5s ease-in-out" }}
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              style={{ transition: "stroke-dashoffset 0.15s linear" }}
             />
           </svg>
-          {/* Exhaustion text placed below the arc, no longer overriding the line */}
-          <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-            <span className="text-2xl font-black uppercase tracking-tighter" style={{ color: theme.orange }}>
-              {current.label}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
+            <span className="text-5xl font-black" style={{ color: themeColor }}>
+              {scoreNum.toFixed(1)}
             </span>
+            <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Exhaustion Index</span>
           </div>
         </div>
 
-        {/* --- MITIGATION HUB --- */}
-        <div className="space-y-3 mb-8 mt-4">
-          <div className="flex justify-between items-center px-1 mb-4 border-b pb-2">
-            <span className="text-[11px] font-black text-[#1D4D4F] uppercase tracking-widest">Mitigation Hub</span>
-            <span className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">Analysis Engine v1.2</span>
-          </div>
+        {/* LABELS */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: themeColor }}>{content.label}</h2>
+          <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{content.sub}</p>
+        </div>
 
-          {current.mitigations.map((m, idx) => (
-            <div key={idx} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-slate-100 rounded-xl group hover:border-[#1D4D4F] transition-all text-left">
-              <div className="flex items-center gap-4">
-                <span className="text-xl">{m.icon}</span>
-                <div>
-                  <p className="text-[13px] font-bold text-[#1D4D4F] leading-tight">{m.task}</p>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">
-                    {m.type} — {m.desc || m.dur}
-                  </p>
-                </div>
-              </div>
-              {m.link ? (
-                <Link to={m.link} className="text-[10px] font-black text-[#E76F51] border-b-2 border-[#E76F51] pb-0.5 uppercase tracking-tighter">
-                  Play
-                </Link>
-              ) : (
-                <span className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">{m.dur}</span>
-              )}
-            </div>
+        {/* DATA */}
+        <div className="bg-slate-50 p-5 rounded-[30px] border border-slate-100 mb-6 space-y-3">
+          <div>
+            <span className="text-[8px] font-black text-slate-400 uppercase block">The Reason</span>
+            <p className="text-sm font-bold text-slate-700">{content.reason}</p>
+          </div>
+          <div>
+            <span className="text-[8px] font-black text-slate-400 uppercase block">Neural Insight</span>
+            <p className="text-[11px] font-medium text-slate-500 italic">"{content.explanation}"</p>
+          </div>
+        </div>
+
+        {/* FIXES */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          {content.fixes.map((f, i) => (
+            <Link key={i} to={f.link} className="flex flex-col items-center p-2 bg-white border border-slate-100 rounded-2xl shadow-sm hover:border-slate-300 transition-all">
+              <span className="text-[7px] font-black text-slate-300 uppercase mb-1">{f.type}</span>
+              <span className="text-[9px] font-bold text-slate-600 text-center leading-tight">{f.label}</span>
+            </Link>
           ))}
         </div>
 
-        {/* --- ACTION BUTTONS --- */}
-        <div className="space-y-3">
-          <Link to="/journal" className="block text-center p-4 bg-[#1D4D4F] text-white font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-slate-800 transition-all rounded-xl shadow-lg">
-            Record to Daily Journal
-          </Link>
-
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full py-2 text-slate-400 font-bold text-[9px] uppercase tracking-widest hover:text-slate-600 transition-colors"
-          >
-            Retake Assessment
-          </button>
+        {/* ACTIONS */}
+        <div className="flex gap-3">
+          <Link to="/dashboard" className="flex-1 py-3 bg-[#E76F51] text-white font-black text-[9px] uppercase rounded-xl text-center shadow-md">Dashboard</Link>
+          <button onClick={() => window.location.reload()} className="flex-1 py-3 bg-slate-100 text-slate-400 font-black text-[9px] uppercase rounded-xl">Retake</button>
         </div>
+
       </div>
     </div>
   );

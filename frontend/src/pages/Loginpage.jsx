@@ -21,12 +21,15 @@ export default function AuthPage() {
     setError("");
 
     // Points to your Laravel backend
-    const endpoint = isLogin ? "/api/login" : "/api/register";
+    const endpoint = isLogin ? "/login" : "/register";;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api${endpoint.replace('/api', '')}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify(formData),
       });
 

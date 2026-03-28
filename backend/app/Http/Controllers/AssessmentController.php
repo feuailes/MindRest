@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
-use App\Models\MoodLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class AssessmentController extends Controller
 {
-    /** GET /api/assessment — list user's assessments */
     public function index(Request $request)
     {
         $assessments = Assessment::where('user_id', $request->user()->id)
@@ -19,18 +18,35 @@ class AssessmentController extends Controller
         return response()->json($assessments);
     }
 
-    /** POST /api/assessment — submit a new assessment */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'sleep_hours'  => 'required|numeric|min:0|max:24',
-            'stress_level' => 'required|integer|min:1|max:10',
-            'screen_time'  => 'required|numeric|min:0|max:24',
-            'mood_rating'  => 'required|integer|min:1|max:10',
+            'sleep_hours'  => 'required|numeric',
+            'stress_level' => 'required|integer',
+            'screen_time'  => 'required|numeric',
+            'mood_rating'  => 'required|integer',
         ]);
 
-        // Simple risk calculation (mirrors old Python ML logic approximately)
-        $risk = $this->calculateRisk($data['sleep_hours'], $data['stress_level'], $data['screen_time']);
+        try {
+            // Laravel calls Flask
+            $response = Http::post('http://127.0.0.1:5000/predict', [
+                'screentime' => $data['screen_time'],
+                'sleep'      => $data['sleep_hours'],
+                'stress'     => $data['stress_level'],
+                'mood'       => $data['mood_rating'],
+            ]);
+
+            // Ensure we get a response, default to '0' if not
+            $prediction = $response->json()['prediction'] ?? '0';
+            
+            // This is the function that was missing!
+            $riskLabel = $this->mapModelPrediction($prediction);
+
+        } catch (\Exception $e) {
+            // Log the error so you can see why it failed in storage/logs/laravel.log
+            \Log::error("Flask Connection Error: " . $e->getMessage());
+            $riskLabel = "Analysis Pending"; 
+        }
 
         $assessment = Assessment::create([
             'user_id'      => $request->user()->id,
@@ -38,46 +54,30 @@ class AssessmentController extends Controller
             'stress_level' => $data['stress_level'],
             'screen_time'  => $data['screen_time'],
             'mood_rating'  => $data['mood_rating'],
-            'risk_level'   => $this->riskLabel($risk),
-        ]);
-
-        // Log mood
-        MoodLog::create([
-            'user_id'      => $request->user()->id,
-            'mood_score'   => $data['mood_rating'],
-            'stress_score' => $data['stress_level'],
-            'sleep_hours'  => $data['sleep_hours'],
-            'log_date'     => now()->toDateString(),
+            'risk_level'   => $riskLabel, 
         ]);
 
         return response()->json([
+            'success' => true,
             'assessment' => $assessment,
-            'risk_label' => $this->riskLabel($risk),
+            'risk_label' => $riskLabel 
         ], 201);
     }
 
-    private function calculateRisk($sleep, $stress, $screen): int
+    /**
+     * Helper to map numeric prediction from Flask to String labels
+     */
+    private function mapModelPrediction($prediction)
     {
-        $score = 0;
-        if ($sleep < 6)     $score += 2;
-        if ($sleep < 7)     $score += 1;
-        if ($stress >= 7)   $score += 2;
-        if ($stress >= 5)   $score += 1;
-        if ($screen > 8)    $score += 2;
-        if ($screen > 6)    $score += 1;
-        // 0-2 = low, 3-5 = moderate, 6+ = high
-        if ($score >= 6) return 3;
-        if ($score >= 3) return 2;
-        return 1;
-    }
+        // Convert to string in case it comes as an int
+        $p = (string)$prediction;
 
+        $mapping = [
+            '0' => 'Low',
+            '1' => 'Moderate',
+            '2' => 'High'
+        ];
 
-    private function riskLabel(int $risk): string
-    {
-        return match ($risk) {
-            3 => 'High',
-            2 => 'Moderate',
-            default => 'Low',
-        };
+        return $mapping[$p] ?? 'Low';
     }
 }

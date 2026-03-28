@@ -16,19 +16,21 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'gender'   => 'required|in:Male,Female',    
+            'gender'   => 'required|in:Male,Female',
         ]);
 
-        $user  = User::create([
+        $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
 
-        //$token = $user->createToken('mindrest-token')->plainTextToken;
+        // ✅ CREATE TOKEN
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user'  => $user,
+            'token' => $token   // ✅ SEND TOKEN
         ], 201);
     }
 
@@ -48,13 +50,12 @@ class AuthController extends Controller
             ]);
         }
 
-        // revoke old tokens (single-session)
-       // $user->tokens()->delete();
-
-        //$token = $user->createToken('mindrest-token')->plainTextToken;
+        // ✅ CREATE TOKEN
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user'  => $user,
+            'token' => $token   // ✅ SEND TOKEN
         ]);
     }
 
