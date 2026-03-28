@@ -1,5 +1,4 @@
 import axios from "axios";
-
 export const mlApi = {
     getPrediction: async (inputs) => {
         // 1. Retrieve the token saved during login
