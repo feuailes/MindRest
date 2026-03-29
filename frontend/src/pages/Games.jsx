@@ -465,23 +465,23 @@ export default function GamesPage() {
 
       {/* CATALOG GRID */}
       <div className="max-w-7xl mx-auto px-6 py-10 z-30 relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
           {MOCK_GAMES.map((game) => (
             <div
               key={game.id}
-              className="game-card bg-white rounded-[2.5rem] p-10 border border-gray-50 flex flex-col items-start shadow-sm h-full group hover:shadow-2xl transition-all duration-500"
+              className="game-card bg-white rounded-[1.75rem] p-6 border border-gray-50 flex flex-col items-start shadow-sm h-full group hover:shadow-xl transition-all duration-500"
             >
               <div
-                className="w-16 h-16 rounded-[1.25rem] mb-8 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"
+                className="w-11 h-11 rounded-[0.875rem] mb-4 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"
                 style={{ backgroundColor: `${game.color}40`, border: `1px solid ${game.color}60` }}
               >
-                <span className="material-symbols-outlined text-3xl font-bold" style={{ color: '#1d4d4f' }}>{game.icon}</span>
+                <span className="material-symbols-outlined text-xl font-bold" style={{ color: '#1d4d4f' }}>{game.icon}</span>
               </div>
-              <h3 className="text-2xl font-black mb-3 text-[#1d4d4f] tracking-tight">{game.name}</h3>
-              <p className="text-slate-400 text-sm mb-10 font-medium leading-relaxed">"{game.description}"</p>
+              <h3 className="text-lg font-black mb-1.5 text-[#1d4d4f] tracking-tight">{game.name}</h3>
+              <p className="text-slate-400 text-xs mb-5 font-medium leading-relaxed">"{game.description}"</p>
               <button
                 onClick={() => handleStartGame(game.name)}
-                className="mt-auto w-full py-4 rounded-xl text-xs font-bold uppercase tracking-[0.2em] bg-slate-50 text-[#1d4d4f] hover:bg-[#1d4d4f] hover:text-white transition-all shadow-sm border border-slate-100 border-b-2"
+                className="mt-auto w-full py-3 rounded-xl text-xs font-bold uppercase tracking-[0.2em] bg-slate-50 text-[#1d4d4f] hover:bg-[#1d4d4f] hover:text-white transition-all shadow-sm border border-slate-100 border-b-2"
               >
                 Launch Sequence
               </button>
