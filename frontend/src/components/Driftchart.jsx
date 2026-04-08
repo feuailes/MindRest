@@ -25,9 +25,9 @@ export default function DriftChart({ data }) {
   };
 
   return (
-    <div className="chart-box card" style={{ padding: "30px", marginTop: 12, backgroundColor: "rgba(255,255,255,0.02)", borderRadius: "16px" }}>
+    <div className="chart-box" style={{ padding: "10px", marginTop: 5, backgroundColor: "transparent" }}>
       
-      <div style={{ position: "relative", height: "200px" }}>
+      <div style={{ position: "relative", height: "180px" }}>
         
         {/* TREND LINE */}
         <svg
@@ -54,7 +54,7 @@ export default function DriftChart({ data }) {
         </svg>
 
         {/* BARS */}
-        <div style={{ display: "flex", alignItems: "flex-end", height: "100%", gap: "15px", paddingBottom: "20px", borderBottom: "1px solid var(--card-border)", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", height: "100%", gap: "15px", paddingBottom: "40px", borderBottom: "1px solid var(--card-border)", position: "relative", zIndex: 1 }}>
           {data.map((item, i) => {
             const color = item.score >= 5 ? "#1D4D4F" : "#E76F51";
 
@@ -72,7 +72,10 @@ export default function DriftChart({ data }) {
                   }}
                 />
                 <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "10px", transform: "rotate(-45deg)", whiteSpace: "nowrap" }}>
-                  {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  {(() => {
+                    const d = new Date(item.created_at || item.date);
+                    return isNaN(d.getTime()) ? (i+1) : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                  })()}
                 </span>
               </div>
             );

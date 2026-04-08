@@ -1,104 +1,124 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function PredictionPage({ passedRisk = "", score = 0, screenTime = 0, focus = 0, sleep = 0, stress = 0 }) {
+export default function PredictionPage(props) {
   const navigate = useNavigate();
   const [animatedPercent, setAnimatedPercent] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(!props.passedRisk);
 
-  const scoreNum = Number(score) || 0;
-  const screenTimeNum = Number(screenTime) || 0;
-  const focusNum = Number(focus) || 0;
-  const sleepNum = Number(sleep) || 0;
-  const stressNum = Number(stress) || 0;
+  const [localData, setLocalData] = useState({
+    passedRisk: props.passedRisk || "Low",
+    score: props.score || 0,
+    screenTime: props.screenTime || 0,
+    focus: props.focus || 0,
+    sleep: props.sleep || 0,
+    stress: props.stress || 0
+  });
 
-  // Animate gauge smoothly from 0 to target
   useEffect(() => {
-    // 1-10 scale mapping to 0-100 percentage.
-    // 1.0 -> 0%, 10.0 -> 100%.
+    const fetchData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/dashboard", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (result.latest_assessment) {
+          const la = result.latest_assessment;
+          setLocalData({
+            passedRisk: la.risk_level,
+            score: (la.sleep_hours + la.stress_level + la.screen_time + (10 - la.mood_rating)) / 4,
+            screenTime: la.screen_time,
+            sleep: la.sleep_hours,
+            stress: la.stress_level,
+            focus: 10 - la.mood_rating
+          });
+          setHistory(result.assessment_history || []);
+        } else {
+          navigate("/assessment");
+        }
+      } catch (err) {
+        console.error("Fetch failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (!props.passedRisk) fetchData();
+    else setLoading(false);
+  }, [props.passedRisk, navigate]);
+
+  const scoreNum = Number(localData.score) || 0;
+  useEffect(() => {
     const targetValue = scoreNum <= 1 ? 0 : Math.min(((scoreNum - 1) / 9) * 100, 100);
-
     let startTimestamp = null;
-    const duration = 1200; // 1.2 seconds for a soft, premium build-up
-
+    const duration = 1200;
     const animate = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
-      // Easing function for a more premium interaction (easeOutExpo)
-      const easedProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-
+      const easedProgress = 1 - Math.pow(2, -10 * progress);
       setAnimatedPercent(easedProgress * targetValue);
-
-      if (progress < 1) {
-        window.requestAnimationFrame(animate);
-      }
+      if (progress < 1) window.requestAnimationFrame(animate);
     };
-
     const animationId = window.requestAnimationFrame(animate);
     return () => window.cancelAnimationFrame(animationId);
   }, [scoreNum]);
 
-  let contentKey = "Low";
-  let themeColor = "#1D4D4F"; // Teal
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-bold tracking-widest uppercase text-[10px]">Processing Neural Flow...</div>;
 
-  if (scoreNum >= 8 || passedRisk.toLowerCase().includes("high")) {
-    contentKey = "High";
-    themeColor = "#ef4444"; // Red
-  } else if (scoreNum >= 4 || passedRisk.toLowerCase().includes("moderate")) {
-    contentKey = "Moderate";
-    themeColor = "#E76F51"; // Orange
+  let contentKey = "Low";
+  let themeColor = "#1D4D4F"; // UI Teal
+  if (scoreNum >= 8 || localData.passedRisk.toLowerCase().includes("high")) {
+    contentKey = "High"; themeColor = "#ef4444";
+  } else if (scoreNum >= 4 || localData.passedRisk.toLowerCase().includes("moderate")) {
+    contentKey = "Moderate"; themeColor = "#E76F51"; // UI Orange
   }
 
- const getReason = () => {
-  let reasons = [];
-
-  if (screenTimeNum > 6) reasons.push(`${screenTimeNum}h screen time`);
-  if (stressNum >= 7) reasons.push("high stress");
-  if (sleepNum >= 7) reasons.push("poor sleep");
-  if (focusNum <= 4) reasons.push("low focus");
-
-  if (reasons.length === 0) return "Balanced routine";
-
-  // Return max 2 reasons to keep UI clean
-  return reasons.slice(0, 2).join(" + ");
-};
+  const getReason = () => {
+    let reasons = [];
+    if (localData.screenTime > 6) reasons.push("Screen");
+    if (localData.stress >= 7) reasons.push("Stress");
+    if (localData.sleep >= 7) reasons.push("Sleep");
+    return reasons.length === 0 ? "Balanced" : reasons.slice(0, 2).join("+");
+  };
 
   const getDynamicContent = () => {
     if (contentKey === "High") {
       return {
-        label: "High Digital Exhaustion",
-        sub: "Rest Immediately",
-        reason: getReason(),
-        explanation: "Your brain is very tired. Take a full break to recover.",
-        fixes: [
-          { type: "Physical", label: "Full Stretch", link: "/exercises" },
-          { type: "Mental", label: "Deep Breathing", link: "/games" },
-          { type: "Journal", label: "Brain Dump", link: "/journal" }
+        label: "High Exhaustion", sub: "Rest Now",
+        explanation: "Neural saturation. Deep recovery needed.",
+        recoveryTime: "2h+ Rest",
+        steps: [
+          { title: "Deep Breathing", sub: "Relax large muscle groups.", path: "/exercises" },
+          { title: "Slow Flow Games", sub: "Gentle neural stimulus.", path: "/games" },
+          { title: "Exhaustion Log", sub: "Identify burnout triggers.", path: "/journal" }
         ]
       };
     }
     if (contentKey === "Moderate") {
       return {
-        label: "Moderate Digital Exhaustion",
-        sub: "Take Short Breaks",
-        reason: getReason(),
-        explanation: "Your brain is a bit tired. Take small breaks to refresh.",
-        fixes: [
-          { type: "Visual", label: "Quick Eye Palming", link: "/exercises" },
-          { type: "Mental", label: "Focus Music", link: "/games" },
-          { type: "Journal", label: "Reflect", link: "/journal" }
+        label: "Moderate Exhaustion", sub: "Pause Needed",
+        explanation: "Load rising. Prevent further strain.",
+        recoveryTime: "30m Cooldown",
+        steps: [
+          { title: "Quick Stretch", sub: "Mobilize neural flow.", path: "/exercises" },
+          { title: "Focus Calibration", sub: "Sharpen cognitive aim.", path: "/games" },
+          { title: "Midday Checkup", sub: "Log your current focus.", path: "/journal" }
         ]
       };
     }
     return {
-      label: "Low Digital Exhaustion",
-      sub: "You are fine",
-      reason: getReason(),
-      explanation: "Your brain is doing fine. Keep your current routine.",
-      fixes: [
-        { type: "Physical", label: "Posture Fix", link: "/exercises" },
-        { type: "Mental", label: "Mindful Check", link: "/games" },
-        { type: "Journal", label: "Gratitude", link: "/journal" }
+      label: "Low Exhaustion", sub: "You are fine",
+      explanation: "Maintaining peak cognitive flow.",
+      recoveryTime: "5m Check",
+      steps: [
+        { title: "Power Posture", sub: "Optimized neural axis.", path: "/exercises" },
+        { title: "Peak Performance", sub: "Test your focus speed.", path: "/games" },
+        { title: "Gratitude Log", sub: "Positive neural framing.", path: "/journal" }
       ]
     };
   };
@@ -109,72 +129,71 @@ export default function PredictionPage({ passedRisk = "", score = 0, screenTime 
   const dashOffset = circumference - (circumference * (animatedPercent / 100));
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-100/90 backdrop-blur-md font-sans">
-
-      <div className="bg-white p-8 w-full max-w-md rounded-[40px] shadow-2xl relative border-b-4 transition-all"
-        style={{ borderBottomColor: themeColor }}>
-
-        {/* CLOSE BUTTON */}
-        <button onClick={() => navigate("/")} className="absolute top-6 right-8 text-slate-300 hover:text-red-400 transition-colors">
-          <span className="text-2xl font-light">×</span>
+    <div className="flex flex-col items-center justify-center p-2 font-sans overflow-hidden">
+      <div className="bg-white p-4 w-full max-w-[340px] rounded-[30px] shadow-2xl relative border-b-4" style={{ borderBottomColor: themeColor }}>
+        
+        {/* CLOSE BUTTON (FIXED: Handles onClose prop, Smaller size) */}
+        <button 
+          onClick={() => props.onClose ? props.onClose() : navigate("/assessment")} 
+          className="absolute top-4 right-5 text-slate-300 hover:text-red-400 text-sm font-bold z-[50]"
+        >
+          ✕
         </button>
 
-        {/* GAUGE & SCORE */}
-        <div className="relative w-48 h-32 mx-auto mb-4">
-          <svg viewBox="0 0 100 65" className="w-full h-full">
-            <path d="M 10 55 A 40 40 0 0 1 90 55" fill="none" stroke="#F1F5F9" strokeWidth="8" strokeLinecap="round" />
-            <path
-              d="M 10 55 A 40 40 0 0 1 90 55"
-              fill="none"
-              stroke={themeColor}
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
-            <span className="text-5xl font-black" style={{ color: themeColor }}>
-              {scoreNum.toFixed(1)}
-            </span>
-            <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Exhaustion Index</span>
-          </div>
+        {/* HEADER SECTION */}
+        <div className="flex flex-col items-center mb-3">
+           {/* GAUGE */}
+           <div className="relative w-36 h-24 mb-1">
+              <svg viewBox="0 0 100 65" className="w-full h-full">
+                <path d="M 10 55 A 40 40 0 0 1 90 55" fill="none" stroke="#F1F5F9" strokeWidth="12" strokeLinecap="round" />
+                <path d="M 10 55 A 40 40 0 0 1 90 55" fill="none" stroke={themeColor} strokeWidth="12" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset} />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+                <span className="text-3xl font-black text-slate-800 tracking-tight">{scoreNum.toFixed(1)}</span>
+                <span className="text-[5px] font-bold text-slate-400 uppercase tracking-[0.2em]">Neural Index</span>
+              </div>
+           </div>
+           <h2 className="text-base font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{content.label}</h2>
+           <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">{content.sub}</p>
         </div>
 
-        {/* LABELS */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: themeColor }}>{content.label}</h2>
-          <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">{content.sub}</p>
+        {/* REASON/INSIGHT GRID */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+           <div className="bg-[#f8fafc] p-2.5 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+              <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest mb-1">Reasoning</span>
+              <p className="text-[9px] font-bold text-slate-700 leading-tight">{getReason()}</p>
+           </div>
+           <div className="bg-[#f8fafc] p-2.5 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+              <span className="text-[6px] font-black text-slate-400 uppercase tracking-widest mb-1">Insight</span>
+              <p className="text-[8px] font-medium text-slate-500 italic leading-snug">"{content.explanation}"</p>
+           </div>
         </div>
 
-        {/* DATA */}
-        <div className="bg-slate-50 p-5 rounded-[30px] border border-slate-100 mb-6 space-y-3">
-          <div>
-            <span className="text-[8px] font-black text-slate-400 uppercase block">The Reason</span>
-            <p className="text-sm font-bold text-slate-700">{content.reason}</p>
-          </div>
-          <div>
-            <span className="text-[8px] font-black text-slate-400 uppercase block">Neural Insight</span>
-            <p className="text-[11px] font-medium text-slate-500 italic">"{content.explanation}"</p>
-          </div>
+        {/* PLAN SECTION (INTERACTIVE) */}
+        <div className="bg-[#f1f5f9]/50 p-3 rounded-2xl mb-4">
+           <div className="flex justify-between items-center mb-3 px-1">
+              <h3 className="text-[8px] font-black text-slate-800">RECOVERY PLAN</h3>
+              <span className="text-[6px] font-black px-2 py-0.5 bg-white text-blue-500 rounded-full border border-slate-100 uppercase">{content.recoveryTime}</span>
+           </div>
+           <div className="space-y-1.5">
+              {content.steps.map((step, i) => (
+                <Link to={step.path} key={i} className="bg-white p-2 rounded-xl flex items-center gap-2 border border-slate-50 hover:border-teal-400 transition-all group scale-100 hover:scale-[1.02]">
+                   <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center font-black text-[9px] group-hover:bg-teal-500 group-hover:text-white transition-colors" style={{ backgroundColor: themeColor + '20', color: themeColor }}>{i+1}</div>
+                   <div className="flex-1">
+                      <p className="text-[8px] font-bold text-slate-800 leading-none group-hover:text-teal-700">{step.title}</p>
+                      <p className="text-[6px] text-slate-400 font-medium leading-none mt-0.5">{step.sub}</p>
+                   </div>
+                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" className="text-slate-200 group-hover:text-teal-400"><path d="M9 18l6-6-6-6"/></svg>
+                </Link>
+              ))}
+           </div>
         </div>
 
-        {/* FIXES */}
-        <div className="grid grid-cols-3 gap-2 mb-6">
-          {content.fixes.map((f, i) => (
-            <Link key={i} to={f.link} className="flex flex-col items-center p-2 bg-white border border-slate-100 rounded-2xl shadow-sm hover:border-slate-300 transition-all">
-              <span className="text-[7px] font-black text-slate-300 uppercase mb-1">{f.type}</span>
-              <span className="text-[9px] font-bold text-slate-600 text-center leading-tight">{f.label}</span>
-            </Link>
-          ))}
+        {/* BUTTONS */}
+        <div className="flex gap-2">
+           <Link to="/dashboard" className="flex-1 py-3 rounded-xl text-[8px] font-black uppercase tracking-widest text-white text-center shadow-md" style={{ backgroundColor: "#1D4D4F" }}>Dashboard</Link>
+           <Link to="/assessment" className="flex-1 py-3 rounded-xl text-[8px] font-black uppercase tracking-widest text-white text-center shadow-md" style={{ backgroundColor: "#E76F51" }}>Retake</Link>
         </div>
-
-        {/* ACTIONS */}
-        <div className="flex gap-3">
-          <Link to="/dashboard" className="flex-1 py-3 bg-[#E76F51] text-white font-black text-[9px] uppercase rounded-xl text-center shadow-md">Dashboard</Link>
-          <button onClick={() => window.location.reload()} className="flex-1 py-3 bg-slate-100 text-slate-400 font-black text-[9px] uppercase rounded-xl">Retake</button>
-        </div>
-
       </div>
     </div>
   );

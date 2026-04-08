@@ -24,30 +24,39 @@ class DashboardController extends Controller
                 'score' => $log->mood_score,
             ]);
 
-        // Recent journal entries (3)
+        // Recent journals (3)
         $journals = JournalEntry::where('user_id', $user->id)
             ->latest()
             ->take(3)
             ->get(['id', 'title', 'mood_tag', 'created_at']);
 
-        // Latest assessment
-        $latestAssessment = Assessment::where('user_id', $user->id)
+        // Assessment History (last 5)
+        $history = Assessment::where('user_id', $user->id)
             ->latest()
-            ->first();
+            ->take(5)
+            ->get();
+
+        // Latest assessment (already present)
+        $latestAssessment = $history->first();
 
         // Stats
         $streak        = $this->calculateStreak($user->id);
         $avgMoodScore  = MoodLog::where('user_id', $user->id)->avg('mood_score') ?? 0;
         $journalCount  = JournalEntry::where('user_id', $user->id)->count();
+        $exerciseCount = \App\Models\ActivityLog::where('user_id', $user->id)->where('activity_type', 'exercise')->count();
+        $gameCount     = \App\Models\ActivityLog::where('user_id', $user->id)->where('activity_type', 'game')->count();
 
         return response()->json([
-            'user'              => $user->only('id', 'name', 'email'),
-            'streak'            => $streak,
-            'mood_score'        => round($avgMoodScore, 1),
-            'journal_count'     => $journalCount,
-            'mood_trend'        => $moodLogs->reverse()->values(),
-            'recent_journals'   => $journals,
-            'latest_assessment' => $latestAssessment,
+            'user'               => $user->only('id', 'name', 'email'),
+            'streak'             => $streak,
+            'mood_score'         => round($avgMoodScore, 1),
+            'journal_count'      => $journalCount,
+            'exercise_count'     => $exerciseCount,
+            'game_count'         => $gameCount,
+            'mood_trend'         => $moodLogs->reverse()->values(),
+            'recent_journals'    => $journals,
+            'latest_assessment'  => $latestAssessment,
+            'assessment_history' => $history,
         ]);
     }
 

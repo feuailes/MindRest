@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\LoginLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -28,6 +29,14 @@ class AuthController extends Controller
         // ✅ CREATE TOKEN
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // ✅ LOG LOGIN
+        LoginLog::create([
+            'user_id'    => $user->id,
+            'action'     => 'login',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'user'  => $user,
             'token' => $token   // ✅ SEND TOKEN
@@ -52,6 +61,14 @@ class AuthController extends Controller
 
         // ✅ CREATE TOKEN
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        // ✅ LOG LOGIN
+        LoginLog::create([
+            'user_id'    => $user->id,
+            'action'     => 'login',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'user'  => $user,
@@ -81,6 +98,14 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // ✅ LOG LOGIN
+        LoginLog::create([
+            'user_id'    => $user->id,
+            'action'     => 'login',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'user'  => $user,
             'token' => $token
@@ -90,7 +115,16 @@ class AuthController extends Controller
     /** POST /api/logout */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // ✅ LOG LOGOUT
+        if ($request->user()) {
+            LoginLog::create([
+                'user_id'    => $request->user()->id,
+                'action'     => 'logout',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+            $request->user()->currentAccessToken()->delete();
+        }
         return response()->json(['message' => 'Logged out successfully.']);
     }
 }

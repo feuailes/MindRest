@@ -75,6 +75,10 @@
 }
 
 /* Body and Typography */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;

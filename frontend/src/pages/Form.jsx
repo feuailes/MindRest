@@ -1,138 +1,226 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PredictionPage from "./Predictionpage";
 import { mlApi } from "../services/mlApi";
 
 export default function Assessment() {
+  const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [risk, setRisk] = useState("Low");
   const [inputs, setInputs] = useState({
-    screentime: 1, sleep: 1, stress: 1, mood: 1
+    screentime: 3, sleep: 8, stress: 3, mood: 8
   });
   const [loading, setLoading] = useState(false);
 
-  const screenLabels = ["<2h", "2-4h", "4-6h", "6-8h", "8-10h", "10-12h", "12-14h", "14-16h", "16-18h", "18h+"];
-  const sleepLabels = ["Great", "V.Good", "Good", "Fair", "Avg", "Poor", "V.Poor", "Bad", "Exhausted", "None"];
-  const stressLabels = ["None", "V.Low", "Low", "Mild", "Mod", "High", "V.High", "Peak", "Burnout", "Extreme"];
-  const moodLabels = ["Great", "Happy", "Good", "Stable", "Neutral", "Low", "Sad", "V.Low", "Bad", "Empty"];
+  const screenTimeMap = [1, 3, 5, 7, 9, 11, 13, 15, 17, 18];
+
+  const moodEmojis = [
+    { threshold: 1, emoji: "😟", label: "HEAVY" },
+    { threshold: 3, emoji: "😐", label: "LOW" },
+    { threshold: 5, emoji: "🙂", label: "CALM" },
+    { threshold: 7, emoji: "😊", label: "VIBRANT" },
+    { threshold: 9, emoji: "😎", label: "PEAK" },
+  ];
+
+  const getMoodInfo = (val) => {
+    return [...moodEmojis].reverse().find(m => val >= m.threshold) || moodEmojis[0];
+  };
 
   const getPrediction = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setLoading(true);
     setShowPopup(false);
 
     try {
       const mappedInputs = {
-        screentime: [1, 3, 5, 7, 9, 11, 13, 15, 17, 18][inputs.screentime - 1],
-        sleep: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10][inputs.sleep - 1],
+        screentime: screenTimeMap[inputs.screentime - 1],
+        sleep: inputs.sleep,
         stress: inputs.stress,
-        mood: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10][inputs.mood - 1]
+        mood: inputs.mood
       };
       const response = await mlApi.getPrediction(mappedInputs);
       const result = response.risk_label;
-      let mappedRisk = result === "High" ? "High Digital Exhaustion (Burnout Risk)" :
-        result === "Moderate" ? "Moderate Digital Exhaustion" : "Low Digital Exhaustion";
-      setRisk(mappedRisk);
+      setRisk(result === "High" ? "High" : result === "Moderate" ? "Moderate" : "Low");
       setShowPopup(true);
     } catch (err) {
-      setRisk("Unable to calculate risk. Please check your connection.");
+      setRisk("Error");
       setShowPopup(true);
     } finally {
       setLoading(false);
     }
   };
 
-  const ChoiceGrid = ({ label, id, list, currentVal }) => (
-    <div className="bg-white p-[0.625rem] rounded-[1.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-md">
-      <div className="flex justify-between items-center mb-[0.4rem] px-[0.25rem]">
-        <span className="text-[0.625rem] font-black text-[#1D4D4F] uppercase tracking-wider">{label}</span>
-        <span className="text-[0.5rem] font-black text-teal-600 bg-teal-50 px-[0.5rem] py-[0.125rem] border border-teal-100 rounded-lg">
-          {list[currentVal - 1]}
-        </span>
-      </div>
-      <div className="grid grid-cols-10 gap-[0.25rem]">
-        {list.map((_, index) => {
-          const val = index + 1;
-          const isActive = currentVal === val;
-          return (
-            <button
-              key={val}
-              type="button"
-              onClick={() => setInputs({ ...inputs, [id]: val })}
-              className={`h-[1.75rem] flex items-center justify-center border transition-all text-[0.68rem] font-black rounded-[0.75rem] ${isActive
-                ? "bg-[#1D4D4F] border-[#1D4D4F] text-white shadow-lg"
-                : "border-slate-100 bg-white text-slate-400 hover:border-[#1D4D4F] hover:bg-slate-50"
-                }`}
-            >
-              {val}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   return (
-    /* FIXED: This wrapper now controls the entire gray background area */
-    <div className="h-screen w-full bg-[#F5F7F9] flex flex-col font-sans overflow-hidden">
+    <div className="min-h-[75vh] w-full bg-[#F5F9FA] flex flex-col items-center justify-start pt-6 pb-12 p-4 font-sans relative">
+      
+      {/* BACK BUTTON (ICON ONLY, NO BOX) */}
+      <button 
+        onClick={() => navigate("/")} 
+        className="absolute top-10 left-10 flex items-center justify-center text-slate-400 hover:text-teal-600 transition-all z-[20]"
+        title="Back to Home"
+      >
+        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+      </button>
 
-      {/* 1. Header/Navbar (Add your actual Navbar component here if separate) */}
-      <header className="w-full shrink-0">
-        {/* Placeholder for your MindRest Nav */}
-      </header>
+      {/* BACKGROUND DECOR */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/30 blur-[100px] rounded-full" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-100/30 blur-[100px] rounded-full" />
 
-      {/* 2. Main content area: Flex-grow pushes the footer down and keeps itself centered */}
-      <main className="flex-grow flex items-center justify-center p-[0.5rem] overflow-hidden">
-        <div className="max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl bg-white rounded-[2.5rem] border-t-[0.375rem] border-[#1D4D4F] overflow-y-auto scrollbar-hide">
-          <div className="p-[1.25rem] border-b border-slate-100 text-center shrink-0">
-            <h2 className="text-[1.25rem] font-light text-[#1D4D4F]">
-              MindRest <span className="font-bold">Assessment</span>
-            </h2>
-            <p className="mt-[0.25rem] text-slate-400 text-[0.56rem] font-black uppercase tracking-[0.3em]">
-              Analysis Engine v1.2
-            </p>
-          </div>
+      {/* ASSESSMENT CARD */}
+      <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl p-10 relative z-10 border border-slate-50 flex flex-col gap-6 shrink-0">
 
-          <form onSubmit={getPrediction} className="p-[1.25rem] space-y-[0.5rem]">
-            <ChoiceGrid label="Screen Usage" id="screentime" list={screenLabels} currentVal={inputs.screentime} />
-            <ChoiceGrid label="Sleep Quality" id="sleep" list={sleepLabels} currentVal={inputs.sleep} />
-            <ChoiceGrid label="Stress Level" id="stress" list={stressLabels} currentVal={inputs.stress} />
-            <ChoiceGrid label="Current Mood" id="mood" list={moodLabels} currentVal={inputs.mood} />
-
-            <div className="pt-[0.75rem] shrink-0">
-              <button
-                type="submit"
-                className="w-full bg-[#E76F51] text-white py-[0.8rem] font-black text-[0.7rem] uppercase tracking-[0.2em] rounded-[1rem] hover:bg-[#cf5b3f] transition-all shadow-lg"
-                disabled={loading}
-              >
-                {loading ? "Analyzing..." : "Generate Analysis"}
-              </button>
+        {/* SCREEN USAGE (Segmented 1-10) */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-[12px] font-bold text-slate-800">Screen Usage</h3>
+              <p className="text-[8px] text-slate-400 font-medium">Cumulative digital exposure</p>
             </div>
-          </form>
-
-          <div className="bg-slate-50 p-[0.625rem] text-center border-t border-slate-100 mt-auto">
-            <p className="text-[0.5rem] text-slate-400 font-bold uppercase tracking-widest">
-              Secure Local Processing — © 2026 MindRest
-            </p>
+            <span className="text-base font-bold text-teal-700">{screenTimeMap[inputs.screentime - 1]}h+</span>
+          </div>
+          <div className="flex items-center gap-1.5 h-1.5">
+            {[...Array(10)].map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setInputs({ ...inputs, screentime: i + 1 })}
+                className={`flex-1 h-full rounded-full transition-all ${i < inputs.screentime ? "bg-[#1D4D4F]" : "bg-slate-100"}`}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between text-[7px] font-black text-slate-300 tracking-[0.2em] uppercase">
+            <span>&lt; 2h</span>
+            <span>18h+</span>
           </div>
         </div>
-      </main>
 
-      {/* 3. Footer: shrink-0 prevents it from pushing the layout height up */}
-      <footer className="w-full shrink-0 py-4 text-center">
-        {/* Your footer links from screenshot 2 go here */}
-      </footer>
+        {/* SLEEP QUALITY (Row 1-10) */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-[12px] font-bold text-slate-800">Sleep Quality</h3>
+              <p className="text-[8px] text-slate-400 font-medium">Restorative depth and duration</p>
+            </div>
+            <span className="text-base font-bold text-teal-700">{inputs.sleep}</span>
+          </div>
+          <div className="flex justify-between gap-1">
+            {[...Array(10)].map((_, i) => {
+              const val = i + 1;
+              const active = inputs.sleep === val;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setInputs({ ...inputs, sleep: val })}
+                  className={`flex-1 aspect-square rounded-lg text-[10px] font-bold transition-all border ${active ? "bg-[#1D4D4F] border-[#1D4D4F] text-white" : "bg-[#f8fafc] border-slate-100 text-slate-400"}`}
+                >
+                  {val}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-between text-[7px] font-black text-slate-300 tracking-[0.2em] uppercase">
+            <span>Restless</span>
+            <span>Deep</span>
+          </div>
+        </div>
+
+        {/* STRESS LEVEL (Slider 1-10) */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-[12px] font-bold text-slate-800">Stress Level</h3>
+              <p className="text-[8px] text-slate-400 font-medium">Psychological and physical tension</p>
+            </div>
+            <span className="text-base font-bold text-orange-500">{inputs.stress}</span>
+          </div>
+          <div className="relative h-4 flex items-center">
+            <input
+              type="range" min="1" max="10"
+              value={inputs.stress}
+              onChange={(e) => setInputs({ ...inputs, stress: parseInt(e.target.value) })}
+              className="w-full h-1 bg-slate-100 rounded-full appearance-none cursor-pointer outline-none"
+              style={{ background: `linear-gradient(to right, #E76F51 ${(inputs.stress - 1) * 11.11}%, #f1f5f9 0%)` }}
+            />
+            <style>{`
+                input[type='range']::-webkit-slider-thumb {
+                  -webkit-appearance: none;
+                  width: 18px;
+                  height: 18px;
+                  background: white;
+                  border: 4px solid #E76F51;
+                  border-radius: 50%;
+                  box-shadow: 0 2px 8px rgba(231, 111, 81, 0.2);
+                }
+              `}</style>
+          </div>
+          <div className="flex justify-between text-[7px] font-black text-slate-300 tracking-[0.2em] uppercase">
+            <span>Zen</span>
+            <span>Peak</span>
+          </div>
+        </div>
+
+        {/* CURRENT MOOD (Row 1-10 with Emoji Visuals) */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div>
+                <h3 className="text-[12px] font-bold text-slate-800">Current Mood</h3>
+                <p className="text-[8px] text-slate-400 font-medium">Emotional baseline today</p>
+              </div>
+              <div className="text-xl">{getMoodInfo(inputs.mood).emoji}</div>
+            </div>
+            <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest bg-teal-50 px-2 py-0.5 rounded">
+              {getMoodInfo(inputs.mood).label}
+            </span>
+          </div>
+          <div className="flex justify-between gap-1">
+            {[...Array(10)].map((_, i) => {
+              const val = i + 1;
+              const active = inputs.mood === val;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setInputs({ ...inputs, mood: val })}
+                  className={`flex-1 aspect-square rounded-lg text-[10px] font-bold transition-all border ${active ? "bg-[#1D4D4F] border-[#1D4D4F] text-white" : "bg-[#f8fafc] border-slate-100 text-slate-400"}`}
+                >
+                  {val}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* SUBMIT */}
+        <button
+          onClick={getPrediction}
+          className="w-full py-5 rounded-[24px] text-xs font-black uppercase tracking-[0.2em] text-white flex items-center justify-center gap-3 shadow-xl transition-all hover:scale-[1.01] disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #2A9D8F 0%, #1D4D4F 100%)' }}
+          disabled={loading}
+        >
+          {loading ? "Generating Analysis..." : (
+            <>
+              Generate Analysis
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M13 3l3.293 3.293L13 9.586M11 21l-3.293-3.293L11 14.414M3 12h18" /></svg>
+            </>
+          )}
+        </button>
+
+        <p className="text-center text-[7px] font-black text-slate-300 uppercase tracking-[0.3em] -mt-2">Last Assessment 24H Ago</p>
+      </div>
 
       {showPopup && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-[1rem]">
-          <div className="bg-white shadow-2xl relative max-w-lg w-full rounded-[2.5rem] border-t-[0.375rem] border-[#E76F51] overflow-hidden">
-            <button onClick={() => setShowPopup(false)} className="absolute top-4 right-6 text-slate-300 hover:text-red-400 font-light text-2xl">✕</button>
+          <div className="relative">
             <PredictionPage
+              onClose={() => setShowPopup(false)}
               passedRisk={risk}
-              score={Number((((inputs.screentime + inputs.sleep + inputs.stress + inputs.mood - 4) / 36) * 10).toFixed(1))}
-              screenTime={inputs.screentime}
+              score={Number((((inputs.screentime + inputs.sleep + inputs.stress + (11 - inputs.mood)) / 4)).toFixed(1))}
+              screenTime={screenTimeMap[inputs.screentime - 1]}
               sleep={inputs.sleep}
               stress={inputs.stress}
-              focus={11 - inputs.mood}
+              focus={inputs.mood}
             />
           </div>
         </div>

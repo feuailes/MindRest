@@ -75,14 +75,7 @@ export default function App() {
           <Route path="/games" element={<AllGamesCard />} />
           <Route path="/exercises" element={<MindfulExercises />} />
           <Route path="/reset" element={<DailyReset />} />
-          <Route
-            path="/journal"
-            element={
-              <ProtectedRoute>
-                <Journal />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/journal" element={<Journal />} />
           <Route path="/about" element={<About />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/feedback" element={<Feedback />} />

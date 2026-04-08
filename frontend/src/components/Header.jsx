@@ -27,7 +27,7 @@ export default function Header() {
     localStorage.removeItem("token");
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("userName");
-    navigate("/login");
+    navigate("/");
   };
 
   return (
@@ -83,7 +83,7 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="login-btn">Get Started</Link>
+            <Link to="/login" className="header-login-btn">Get Started</Link>
           )}
         </div>
       </div>

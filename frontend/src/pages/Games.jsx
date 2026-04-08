@@ -405,9 +405,6 @@ const ShadeFinder = () => {
   );
 };
 
-/* ========================================================= */
-/* MAIN GAMES COMPONENT */
-/* ========================================================= */
 
 export default function GamesPage() {
   const [activeGame, setActiveGame] = useState(null);
