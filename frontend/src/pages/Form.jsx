@@ -26,6 +26,22 @@ export default function Assessment() {
     return [...moodEmojis].reverse().find(m => val >= m.threshold) || moodEmojis[0];
   };
 
+  const getSleepInfo = (val) => {
+    if (val <= 2) return { label: "RESTLESS", color: "text-red-500 bg-red-50" };
+    if (val <= 5) return { label: "MINIMAL", color: "text-orange-500 bg-orange-50" };
+    if (val <= 7) return { label: "FAIR", color: "text-yellow-600 bg-yellow-50" };
+    if (val <= 9) return { label: "OPTIMAL", color: "text-teal-600 bg-teal-50" };
+    return { label: "DEEP", color: "text-emerald-600 bg-emerald-50" };
+  };
+
+  const getStressInfo = (val) => {
+    if (val <= 2) return { label: "ZEN", color: "text-emerald-600 bg-emerald-50" };
+    if (val <= 4) return { label: "CALM", color: "text-teal-600 bg-teal-50" };
+    if (val <= 6) return { label: "MODERATE", color: "text-yellow-600 bg-yellow-50" };
+    if (val <= 8) return { label: "ELEVATED", color: "text-orange-500 bg-orange-50" };
+    return { label: "PEAK", color: "text-red-500 bg-red-50" };
+  };
+
   const getPrediction = async (e) => {
     if (e) e.preventDefault();
     setLoading(true);
@@ -52,10 +68,10 @@ export default function Assessment() {
 
   return (
     <div className="min-h-[75vh] w-full bg-[#F5F9FA] flex flex-col items-center justify-start pt-6 pb-12 p-4 font-sans relative">
-      
+
       {/* BACK BUTTON (ICON ONLY, NO BOX) */}
-      <button 
-        onClick={() => navigate("/")} 
+      <button
+        onClick={() => navigate("/")}
         className="absolute top-10 left-10 flex items-center justify-center text-slate-400 hover:text-teal-600 transition-all z-[20]"
         title="Back to Home"
       >
@@ -97,9 +113,14 @@ export default function Assessment() {
         {/* SLEEP QUALITY (Row 1-10) */}
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[12px] font-bold text-slate-800">Sleep Quality</h3>
-              <p className="text-[8px] text-slate-400 font-medium">Restorative depth and duration</p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h3 className="text-[12px] font-bold text-slate-800">Sleep Quality</h3>
+                <p className="text-[8px] text-slate-400 font-medium">Restorative depth and duration</p>
+              </div>
+              <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${getSleepInfo(inputs.sleep).color}`}>
+                {getSleepInfo(inputs.sleep).label}
+              </span>
             </div>
             <span className="text-base font-bold text-teal-700">{inputs.sleep}</span>
           </div>
@@ -128,9 +149,14 @@ export default function Assessment() {
         {/* STRESS LEVEL (Slider 1-10) */}
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-[12px] font-bold text-slate-800">Stress Level</h3>
-              <p className="text-[8px] text-slate-400 font-medium">Psychological and physical tension</p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h3 className="text-[12px] font-bold text-slate-800">Stress Level</h3>
+                <p className="text-[8px] text-slate-400 font-medium">Psychological and physical tension</p>
+              </div>
+              <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${getStressInfo(inputs.stress).color}`}>
+                {getStressInfo(inputs.stress).label}
+              </span>
             </div>
             <span className="text-base font-bold text-orange-500">{inputs.stress}</span>
           </div>

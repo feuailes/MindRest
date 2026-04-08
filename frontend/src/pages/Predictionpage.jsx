@@ -86,39 +86,62 @@ export default function PredictionPage(props) {
     return reasons.length === 0 ? "Balanced" : reasons.slice(0, 2).join("+");
   };
 
+  const getNeuralInsight = () => {
+    // Check for extreme outliers first
+    if (localData.sleep <= 3) return "You really need to get some sleep. Your body is tired.";
+    if (localData.screenTime >= 15) return "You have spent too much time looking at screens today. Give your eyes a long break.";
+    if (localData.stress >= 9) return "You are very stressed right now. You need to stop and take it easy.";
+
+    if (scoreNum >= 8) {
+      if (localData.sleep < 6) return "You are very tired because you didn't sleep enough.";
+      if (localData.screenTime > 12) return "Your eyes and brain are tired from too much screen time.";
+      if (localData.stress > 8) return "You are under a lot of pressure. You need to stop and rest.";
+      return "You are reaching your limit. Please take a long break.";
+    }
+    if (scoreNum >= 4) {
+      if (localData.stress > 6) return "You are starting to feel stressed. Try a quick break.";
+      if (localData.screenTime > 8) return "You have been on your phone or computer for a while.";
+      if (localData.sleep < 7) return "A little more rest would help you focus better.";
+      return "Your energy is dipping. A short pause would be good.";
+    }
+    if (localData.screenTime > 6) return "Try to spend a little less time on screens for the rest of the day.";
+    if (localData.mood > 8) return "You are in a great mood! This is a good time to get things done.";
+    return "You have a healthy balance. Keep doing what you're doing.";
+  };
+
   const getDynamicContent = () => {
     if (contentKey === "High") {
       return {
         label: "High Exhaustion", sub: "Rest Now",
-        explanation: "Neural saturation. Deep recovery needed.",
-        recoveryTime: "2h+ Rest",
+        explanation: getNeuralInsight(),
+        recoveryTime: "",
         steps: [
-          { title: "Deep Breathing", sub: "Relax large muscle groups.", path: "/exercises" },
-          { title: "Slow Flow Games", sub: "Gentle neural stimulus.", path: "/games" },
-          { title: "Exhaustion Log", sub: "Identify burnout triggers.", path: "/journal" }
+          { title: "Muscle Relaxation", sub: "Deep physical release.", path: "/exercises" },
+          { title: "Colorblind (Slow)", sub: "Minimum stimulus game.", path: "/games" },
+          { title: "Burnout Relief Log", sub: "Release mental pressure.", path: "/journal" }
         ]
       };
     }
     if (contentKey === "Moderate") {
       return {
         label: "Moderate Exhaustion", sub: "Pause Needed",
-        explanation: "Load rising. Prevent further strain.",
-        recoveryTime: "30m Cooldown",
+        explanation: getNeuralInsight(),
+        recoveryTime: "",
         steps: [
-          { title: "Quick Stretch", sub: "Mobilize neural flow.", path: "/exercises" },
-          { title: "Focus Calibration", sub: "Sharpen cognitive aim.", path: "/games" },
-          { title: "Midday Checkup", sub: "Log your current focus.", path: "/journal" }
+          { title: "Box Breathing", sub: "Steady neural rhythm.", path: "/exercises" },
+          { title: "Pattern Match", sub: "Light cognitive focus.", path: "/games" },
+          { title: "Clarity Journal", sub: "Record your thoughts.", path: "/journal" }
         ]
       };
     }
     return {
       label: "Low Exhaustion", sub: "You are fine",
-      explanation: "Maintaining peak cognitive flow.",
-      recoveryTime: "5m Check",
+      explanation: getNeuralInsight(),
+      recoveryTime: "",
       steps: [
-        { title: "Power Posture", sub: "Optimized neural axis.", path: "/exercises" },
-        { title: "Peak Performance", sub: "Test your focus speed.", path: "/games" },
-        { title: "Gratitude Log", sub: "Positive neural framing.", path: "/journal" }
+        { title: "Power Posture", sub: "Align your neural axis.", path: "/exercises" },
+        { title: "Focus Challenge", sub: "Quick reaction test.", path: "/games" },
+        { title: "Gratitude Journal", sub: "Positive neural framing.", path: "/journal" }
       ]
     };
   };
@@ -130,7 +153,7 @@ export default function PredictionPage(props) {
 
   return (
     <div className="flex flex-col items-center justify-center p-2 font-sans overflow-hidden">
-      <div className="bg-white p-4 w-full max-w-[340px] rounded-[30px] shadow-2xl relative border-b-4" style={{ borderBottomColor: themeColor }}>
+      <div className="bg-white p-4 w-full max-w-[360px] rounded-[30px] shadow-2xl relative border-b-4" style={{ borderBottomColor: themeColor }}>
         
         {/* CLOSE BUTTON (FIXED: Handles onClose prop, Smaller size) */}
         <button 
@@ -173,7 +196,9 @@ export default function PredictionPage(props) {
         <div className="bg-[#f1f5f9]/50 p-3 rounded-2xl mb-4">
            <div className="flex justify-between items-center mb-3 px-1">
               <h3 className="text-[8px] font-black text-slate-800">RECOVERY PLAN</h3>
-              <span className="text-[6px] font-black px-2 py-0.5 bg-white text-blue-500 rounded-full border border-slate-100 uppercase">{content.recoveryTime}</span>
+              {content.recoveryTime && (
+                <span className="text-[6px] font-black px-2 py-0.5 bg-white text-blue-500 rounded-full border border-slate-100 uppercase">{content.recoveryTime}</span>
+              )}
            </div>
            <div className="space-y-1.5">
               {content.steps.map((step, i) => (
@@ -192,7 +217,13 @@ export default function PredictionPage(props) {
         {/* BUTTONS */}
         <div className="flex gap-2">
            <Link to="/dashboard" className="flex-1 py-3 rounded-xl text-[8px] font-black uppercase tracking-widest text-white text-center shadow-md" style={{ backgroundColor: "#1D4D4F" }}>Dashboard</Link>
-           <Link to="/assessment" className="flex-1 py-3 rounded-xl text-[8px] font-black uppercase tracking-widest text-white text-center shadow-md" style={{ backgroundColor: "#E76F51" }}>Retake</Link>
+           <button 
+             onClick={() => props.onClose ? props.onClose() : navigate("/assessment")}
+             className="flex-1 py-3 rounded-xl text-[8px] font-black uppercase tracking-widest text-white text-center shadow-md" 
+             style={{ backgroundColor: "#E76F51" }}
+           >
+             Retake
+           </button>
         </div>
       </div>
     </div>

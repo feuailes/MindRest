@@ -36,8 +36,8 @@ const Icons = {
   ),
   Streak: () => (
     <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <path d="M8.5 14.5A2.5 2.5 0 0011 12c-2.28 0-3-1.5-3-3s3-5 3-5f-1 3-1 3"></path>
-      <path d="M12 21a6 6 0 006-6c0-4-3-6-3-6s-1 2-1 2c-1.5 0-2.5-1.5-2.5-3 0 0-3 3-3 7a6 6 0 003.5 5.5z"></path>
+      <path d="M8.5 14.5A2.5 2.5 0 0011 12c-2.28 0-3-1.5-3-3s3-5 3-5s-1 3-1 3" />
+      <path d="M12 21a6 6 0 006-6c0-4-3-6-3-6s-1 2-1 2c-1.5 0-2.5-1.5-2.5-3 0 0-3 3-3 7a6 6 0 003.5 5.5z" />
     </svg>
   )
 };
@@ -196,11 +196,11 @@ export default function Dashboard() {
             </div>
 
             {/* DIGITAL BALANCE */}
-            {latestAssessment?.sleep_hours && (
-              <div className="premium-card" style={{ ...styles.card, padding: '15px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)' }}>
-                <div style={styles.cardHeader}>
-                  <h3 style={styles.cardTitle}>Digital Balance</h3>
-                </div>
+            <div className="premium-card" style={{ ...styles.card, padding: '15px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)', minHeight: '120px' }}>
+              <div style={styles.cardHeader}>
+                <h3 style={styles.cardTitle}>Digital Balance</h3>
+              </div>
+              {latestAssessment?.sleep_hours ? (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '11px', fontWeight: '800' }}>
                     <span style={{ color: '#E76F51' }}>Screen: {screenHrs}h</span>
@@ -211,8 +211,12 @@ export default function Dashboard() {
                     <div style={{ ...styles.balanceBarFill, width: `${sleepPercent}%`, backgroundColor: '#2A9D8F' }} />
                   </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div style={styles.emptyState}>
+                  Complete an assessment to see balance
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -256,12 +260,12 @@ export default function Dashboard() {
             </div>
 
             {/* TRACKING HISTORY */}
-            {data?.assessment_history?.length > 0 && (
-              <div className="premium-card" style={{ padding: '15px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)' }}>
-                <div style={styles.cardHeader}>
-                  <h3 style={styles.cardTitle}>Tracking History</h3>
-                  <Link to="/assessment" style={{ ...styles.linkBtn, textDecoration: 'none' }}>LATEST ➔</Link>
-                </div>
+            <div className="premium-card" style={{ ...styles.card, padding: '15px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)', minHeight: '135px' }}>
+              <div style={styles.cardHeader}>
+                <h3 style={styles.cardTitle}>Tracking History</h3>
+                <Link to="/assessment" style={{ ...styles.linkBtn, textDecoration: 'none' }}>LATEST ➔</Link>
+              </div>
+              {data?.assessment_history?.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {data.assessment_history.slice(0, 3).map((h, i) => (
                     <div key={i} style={styles.historyRow}>
@@ -275,8 +279,12 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div style={styles.emptyState}>
+                   No tracking history yet
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -360,6 +368,7 @@ const styles = {
   loader: { height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748B" },
   pageContainer: { backgroundColor: "#F8FAFB", minHeight: "calc(100vh - 160px)", padding: "20px 4%", boxSizing: "border-box" },
   wrapper: { maxWidth: "1400px", margin: "0 auto", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: '15px' },
+  card: { borderRadius: '24px', border: '1px solid rgba(241, 245, 249, 0.5)' },
 
   headerRow: { marginBottom: "5px" },
   backBtn: { display: 'flex', alignItems: 'center', gap: '6px', color: '#64748B', fontWeight: '800', fontSize: '11px', transition: '0.2s', padding: 0 },
