@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard Data
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard/insight', [DashboardController::class, 'insight']); // Async AI insight
 
     // Journals
     Route::get('/journal', [JournalController::class, 'index']);
