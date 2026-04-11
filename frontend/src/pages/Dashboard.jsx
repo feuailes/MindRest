@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DriftChart from "../components/Driftchart";
+import CorrelationChart from "../components/CorrelationChart";
 
 // Custom SVG Icons
 const Icons = {
@@ -286,6 +287,22 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* FULL WIDTH CORRELATION CHART */}
+        <div style={{ marginTop: '20px', position: 'relative', zIndex: 10 }}>
+            <div className="premium-card" style={{ ...styles.card, padding: '20px', backgroundColor: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)', minHeight: '300px' }}>
+              <div style={styles.cardHeader}>
+                <h3 style={styles.cardTitle}>Mood-Sleep Correlation Analysis</h3>
+                <span style={{ fontSize: '9px', color: '#94A3B8', fontWeight: '800' }}>14 DAY INSIGHT</span>
+              </div>
+              <div style={{ height: '240px' }}>
+                <CorrelationChart history={data?.history} />
+              </div>
+              <p style={{ margin: '15px 0 0', fontSize: '10px', color: '#64748B', fontStyle: 'italic', textAlign: 'center' }}>
+                Higher Sleep hours typically correlate with more stable mood patterns.
+              </p>
+            </div>
         </div>
       </div>
 

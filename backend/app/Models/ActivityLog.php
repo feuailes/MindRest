@@ -14,6 +14,7 @@ class ActivityLog extends Model
         'game_id',
         'activity_type',
         'duration_minutes',
+        'score',
         'created_at',
     ];
 

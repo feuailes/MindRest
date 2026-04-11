@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     /** GET /api/dashboard */
-    public function index(Request $request)
+    public function index(Request $request, \App\Services\UserInsightService $insightService)
     {
         $user = $request->user();
 
-        // Last 7 mood logs
+        // Last 7 mood logs (kept for existing UI)
         $moodLogs = MoodLog::where('user_id', $user->id)
             ->latest('log_date')
             ->take(7)
@@ -46,6 +46,9 @@ class DashboardController extends Controller
         $exerciseCount = \App\Models\ActivityLog::where('user_id', $user->id)->where('activity_type', 'exercise')->count();
         $gameCount     = \App\Models\ActivityLog::where('user_id', $user->id)->where('activity_type', 'game')->count();
 
+        // New Insights Data
+        $insights = $insightService->getRecentHistory($user->id);
+
         return response()->json([
             'user'               => $user->only('id', 'name', 'email'),
             'streak'             => $streak,
@@ -57,6 +60,7 @@ class DashboardController extends Controller
             'recent_journals'    => $journals,
             'latest_assessment'  => $latestAssessment,
             'assessment_history' => $history,
+            'history'            => $insights // Added the history data
         ]);
     }
 

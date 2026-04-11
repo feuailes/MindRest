@@ -4,13 +4,14 @@ import "./Games.css";
 
 // gradFrom/gradTo drive the per-card Launch Sequence button gradient
 const MOCK_GAMES = [
-  { id: 1, name: "Breathing Circle", description: "Guided breathing for instant calm.", color: "#b2e2d2", icon: "adjust", gradFrom: "#2A9D8F", gradTo: "#1d4d4f" },
-  { id: 2, name: "Bubble Pop", description: "Pop bubbles to release tension.", color: "#d1e9ff", icon: "bubble_chart", gradFrom: "#5ba4e0", gradTo: "#1d4d4f" },
-  { id: 3, name: "Reaction Test", description: "Test focus with rapid color changes.", color: "#ffd8d1", icon: "timer", gradFrom: "#e76f51", gradTo: "#b54b35" },
-  { id: 4, name: "Memory Match", description: "Find pairs of hidden symbols.", color: "#e2d1ff", icon: "grid_view", gradFrom: "#7c5cbf", gradTo: "#1d4d4f" },
-  { id: 5, name: "Zen Sand", description: "Draw patterns in digital sand.", color: "#f5f5dc", icon: "gesture", gradFrom: "#c8b97a", gradTo: "#1d4d4f" },
+  { id: 1, game_id: 1, name: "Breathing Circle", description: "Guided breathing for instant calm.", color: "#b2e2d2", icon: "adjust", gradFrom: "#2A9D8F", gradTo: "#1d4d4f" },
+  { id: 2, game_id: 2, name: "Bubble Pop", description: "Pop bubbles to release tension.", color: "#d1e9ff", icon: "bubble_chart", gradFrom: "#5ba4e0", gradTo: "#1d4d4f" },
+  { id: 3, game_id: 3, name: "Reaction Test", description: "Test focus with rapid color changes.", color: "#ffd8d1", icon: "timer", gradFrom: "#e76f51", gradTo: "#b54b35" },
+  { id: 4, game_id: 4, name: "Memory Match", description: "Find pairs of hidden symbols.", color: "#e2d1ff", icon: "grid_view", gradFrom: "#7c5cbf", gradTo: "#1d4d4f" },
+  { id: 5, game_id: 5, name: "Zen Sand", description: "Draw patterns in digital sand.", color: "#f5f5dc", icon: "gesture", gradFrom: "#c8b97a", gradTo: "#1d4d4f" },
   {
     id: 6,
+    game_id: 6,
     name: "Shade Finder",
     description: "Spot the odd color to test visual focus.",
     color: "#d1ffd6",
@@ -60,9 +61,13 @@ const BreathingCircle = () => {
 };
 
 // 2. Bubble Pop
-const BubblePop = () => {
+const BubblePop = ({ onScoreUpdate }) => {
   const [bubbles, setBubbles] = useState([]);
   const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    onScoreUpdate(score);
+  }, [score, onScoreUpdate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -110,10 +115,14 @@ const BubblePop = () => {
 };
 
 // 3. Reaction Test
-const ReactionTest = () => {
+const ReactionTest = ({ onScoreUpdate }) => {
   const [stage, setStage] = useState('idle'); // idle, waiting, go, too-early, result
   const [startTime, setStartTime] = useState(null);
   const [reactionTime, setReactionTime] = useState(null);
+
+  useEffect(() => {
+    if (reactionTime) onScoreUpdate(reactionTime);
+  }, [reactionTime, onScoreUpdate]);
   const timeoutRef = useRef(null);
 
   const startTest = () => {
@@ -184,11 +193,15 @@ const ReactionTest = () => {
 
 // 4. Memory Match
 const CARD_PAIRS = ['✨', '🍃', '🌊', '☁️', '🌙', '⭐', '☀️', '💧'];
-const MemoryMatch = () => {
+const MemoryMatch = ({ onScoreUpdate }) => {
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
   const [moves, setMoves] = useState(0);
+
+  useEffect(() => {
+    onScoreUpdate(moves);
+  }, [moves, onScoreUpdate]);
 
   useEffect(() => {
     const shuffled = [...CARD_PAIRS, ...CARD_PAIRS]
@@ -333,11 +346,15 @@ const ZenSand = () => {
 };
 
 // 6. Shade Finder (Colorblind Game)
-const ShadeFinder = () => {
+const ShadeFinder = ({ onScoreUpdate, onGameOver }) => {
   const [gridSize, setGridSize] = useState(2);
   const [targetIndex, setTargetIndex] = useState(0);
   const [colors, setColors] = useState({ base: "", odd: "" });
   const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    onScoreUpdate(score);
+  }, [score, onScoreUpdate]);
 
   const generateLevel = useCallback(() => {
     // Generate a random base color
@@ -372,6 +389,9 @@ const ShadeFinder = () => {
       if (score === 15) setGridSize(5);
       if (score === 25) setGridSize(6);
       generateLevel();
+    } else {
+      // Wrong click ends game
+      onGameOver();
     }
   };
 
@@ -411,6 +431,9 @@ export default function GamesPage() {
   const [timeLeft, setTimeLeft] = useState(180); // 3 minutes
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showFinishScreen, setShowFinishScreen] = useState(false);
+  const [currentScore, setCurrentScore] = useState(0);
+
+  const activeGameData = MOCK_GAMES.find(g => g.name === activeGame);
 
   // Timer logic
   useEffect(() => {
@@ -426,11 +449,41 @@ export default function GamesPage() {
     return () => clearInterval(timer);
   }, [activeGame, isTimerActive, timeLeft, showFinishScreen]);
 
+  const recordScore = async () => {
+    if (!activeGameData) return;
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("http://127.0.0.1:8000/api/activity-logs", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          activity_type: "game",
+          duration_minutes: 3,
+          game_id: activeGameData.game_id,
+          score: currentScore
+        })
+      });
+    } catch (err) {
+      console.error("Failed to record game score:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (showFinishScreen) {
+      recordScore();
+    }
+  }, [showFinishScreen]);
+
   const handleStartGame = (gameName) => {
     setActiveGame(gameName);
     setTimeLeft(180);
     setIsTimerActive(true);
     setShowFinishScreen(false);
+    setCurrentScore(0);
   };
 
   const handleResetGame = () => {
@@ -454,11 +507,11 @@ export default function GamesPage() {
   const renderGame = () => {
     switch (activeGame) {
       case "Breathing Circle": return <BreathingCircle />;
-      case "Bubble Pop": return <BubblePop />;
-      case "Reaction Test": return <ReactionTest />;
-      case "Memory Match": return <MemoryMatch />;
+      case "Bubble Pop": return <BubblePop onScoreUpdate={setCurrentScore} />;
+      case "Reaction Test": return <ReactionTest onScoreUpdate={setCurrentScore} />;
+      case "Memory Match": return <MemoryMatch onScoreUpdate={setCurrentScore} />;
       case "Zen Sand": return <ZenSand />;
-      case "Shade Finder": return <ShadeFinder />;
+      case "Shade Finder": return <ShadeFinder onScoreUpdate={setCurrentScore} onGameOver={() => setShowFinishScreen(true)} />;
       default: return null;
     }
   };
@@ -579,9 +632,16 @@ export default function GamesPage() {
                     className="w-64 h-64 mb-10 object-contain"
                   />
                   <h2 className="text-6xl font-black text-[#1d4d4f] mb-4 italic-serif">Well Rested</h2>
-                  <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-12">Session Complete</p>
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-sm mb-4">Session Complete</p>
+                  
+                  {activeGame !== "Breathing Circle" && activeGame !== "Zen Sand" && (
+                    <div className="mb-8">
+                       <p className="text-xs text-slate-400 uppercase tracking-widest font-black mb-1">Final Score</p>
+                       <p className="text-5xl font-black text-[#2A9D8F]">{currentScore}</p>
+                    </div>
+                  )}
 
-                  <div className="flex flex-col sm:flex-row gap-6 w-full">
+                  <div className="flex flex-col sm:flex-row gap-6 w-full mt-8">
                     <button
                       onClick={handleResetGame}
                       className="flex-1 py-5 bg-[#1d4d4f] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg hover:shadow-2xl transition-all"
