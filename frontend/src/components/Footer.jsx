@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -87,10 +88,10 @@ export default function Footer() {
 
         {/* Navigation Links */}
         <nav style={navLinks}>
-          <a href="/about" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>About</a>
-          <a href="/contact" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>Contact</a>
-          <a href="/feedback" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>Feedback</a>
-          <a href="/resources" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>Resources</a>
+          <Link to="/about" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>About</Link>
+          <Link to="/contact" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>Contact</Link>
+          <Link to="/feedback" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>Feedback</Link>
+          <Link to="/resources" style={linkItem} onMouseEnter={(e) => handleHover(e, true)} onMouseLeave={(e) => handleHover(e, false)}>Resources</Link>
         </nav>
 
       </div>
