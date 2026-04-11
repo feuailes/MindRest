@@ -1,8 +1,35 @@
-import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { feedbackApi } from '../services/feedbackApi';
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await feedbackApi.submitContact(formData);
+      setSubmitted(true);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Contact Error:", error);
+      alert("Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full bg-[#F8FAFB] py-8 px-6 flex flex-col items-center justify-center font-['Plus_Jakarta_Sans'] min-h-[calc(100vh-70px)]">
@@ -42,7 +69,7 @@ export default function Contact() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}
+              onSubmit={handleSubmit}
               className="bg-white p-8 md:p-10 rounded-[2rem] shadow-[0_20px_60px_rgba(29,77,79,0.06)] border border-white flex flex-col gap-4"
             >
               <div className="flex flex-col md:flex-row gap-4">
@@ -52,6 +79,9 @@ export default function Contact() {
                     required 
                     type="text" 
                     placeholder="John Doe" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full bg-[#fcfdfd] border border-slate-200 py-2.5 px-4 text-[#1D4D4F] focus:outline-none focus:border-[#1D4D4F] focus:bg-white focus:shadow-[0_0_0_4px_rgba(29,77,79,0.1)] transition-all rounded-[0.85rem] text-sm font-medium placeholder-slate-300"
                   />
                 </div>
@@ -61,6 +91,9 @@ export default function Contact() {
                     required 
                     type="email" 
                     placeholder="john@example.com" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="w-full bg-[#fcfdfd] border border-slate-200 py-2.5 px-4 text-[#1D4D4F] focus:outline-none focus:border-[#1D4D4F] focus:bg-white focus:shadow-[0_0_0_4px_rgba(29,77,79,0.1)] transition-all rounded-[0.85rem] text-sm font-medium placeholder-slate-300"
                   />
                 </div>
@@ -72,6 +105,9 @@ export default function Contact() {
                   required 
                   type="text" 
                   placeholder="How can we help?" 
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
                   className="w-full bg-[#fcfdfd] border border-slate-200 py-2.5 px-4 text-[#1D4D4F] focus:outline-none focus:border-[#1D4D4F] focus:bg-white focus:shadow-[0_0_0_4px_rgba(29,77,79,0.1)] transition-all rounded-[0.85rem] text-sm font-medium placeholder-slate-300"
                 />
               </div>
@@ -82,12 +118,19 @@ export default function Contact() {
                   required 
                   rows="3" 
                   placeholder="Write your message here..." 
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
                   className="w-full bg-[#fcfdfd] border border-slate-200 py-2.5 px-4 text-[#1D4D4F] focus:outline-none focus:border-[#1D4D4F] focus:bg-white focus:shadow-[0_0_0_4px_rgba(29,77,79,0.1)] transition-all resize-none rounded-[0.85rem] text-sm font-medium placeholder-slate-300"
                 ></textarea>
               </div>
 
-              <button type="submit" className="mt-2 bg-[#1D4D4F] text-white py-3.5 rounded-[1rem] font-bold uppercase tracking-widest text-xs hover:bg-[#E76F51] border border-transparent hover:border-[#E76F51] transition-all shadow-[0_10px_30px_rgba(29,77,79,0.2)] hover:shadow-[0_10px_30px_rgba(231,111,81,0.3)] w-full focus:outline-none">
-                Send Message
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="mt-2 bg-[#1D4D4F] text-white py-3.5 rounded-[1rem] font-bold uppercase tracking-widest text-xs hover:bg-[#E76F51] border border-transparent hover:border-[#E76F51] transition-all shadow-[0_10px_30px_rgba(29,77,79,0.2)] hover:shadow-[0_10px_30px_rgba(231,111,81,0.3)] w-full focus:outline-none disabled:opacity-50"
+              >
+                {loading ? "Sending..." : "Send Message"}
               </button>
             </motion.form>
           )}

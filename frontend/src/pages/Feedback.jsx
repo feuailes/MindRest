@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { feedbackApi } from '../services/feedbackApi';
 
 const MOODS = [
     { value: 1, emoji: "😫", label: "Stressed" },
@@ -11,15 +11,28 @@ const MOODS = [
 
 export default function Feedback() {
     const [rating, setRating] = useState(null);
+    const [comment, setComment] = useState("");
     const [showToast, setShowToast] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!rating) return;
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 4000);
-        e.target.reset();
-        setRating(null);
+        setLoading(true);
+
+        try {
+            await feedbackApi.submitFeedback(rating, comment);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 4000);
+            e.target.reset();
+            setRating(null);
+            setComment("");
+        } catch (error) {
+            console.error("Feedback Error:", error);
+            alert("Failed to submit feedback. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -63,13 +76,19 @@ export default function Feedback() {
                         <textarea
                             required
                             rows="3"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
                             className="w-full bg-[#fcfdfd] border border-slate-200 rounded-[0.85rem] py-3 px-4 text-[#1D4D4F] focus:outline-none focus:border-[#1D4D4F] transition-all resize-none placeholder-slate-300 text-sm font-medium focus:shadow-[0_0_0_4px_rgba(29,77,79,0.1)] focus:bg-white"
                             placeholder="Share your thoughts on routines, triggers, or specific features..."
                         ></textarea>
                     </div>
 
-                    <button type="submit" className="mt-2 bg-[#1D4D4F] text-white py-3.5 rounded-[1rem] font-bold uppercase tracking-widest text-xs hover:bg-[#E76F51] border border-transparent hover:border-[#E76F51] transition-all shadow-[0_10px_30px_rgba(29,77,79,0.2)] hover:shadow-[0_10px_30px_rgba(231,111,81,0.3)] w-full focus:outline-none">
-                        Submit Feedback
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="mt-2 bg-[#1D4D4F] text-white py-3.5 rounded-[1rem] font-bold uppercase tracking-widest text-xs hover:bg-[#E76F51] border border-transparent hover:border-[#E76F51] transition-all shadow-[0_10px_30px_rgba(29,77,79,0.2)] hover:shadow-[0_10px_30px_rgba(231,111,81,0.3)] w-full focus:outline-none disabled:opacity-50"
+                    >
+                        {loading ? "Submitting..." : "Submit Feedback"}
                     </button>
                 </form>
             </div>

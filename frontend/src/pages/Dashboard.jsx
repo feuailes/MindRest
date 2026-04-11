@@ -281,7 +281,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div style={styles.emptyState}>
-                   No tracking history yet
+                  No tracking history yet
                 </div>
               )}
             </div>
