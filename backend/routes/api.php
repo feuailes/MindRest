@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Activity Logs
     Route::post('/activity-logs', [ActivityLogController::class, 'store']);
+    Route::get('/activity-logs/recent-game', [ActivityLogController::class, 'getRecentGame']);
 
     // Feedback
     Route::post('/feedback', [FeedbackController::class, 'store']);

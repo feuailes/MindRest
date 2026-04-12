@@ -29,4 +29,16 @@ class ActivityLogController extends Controller
         
         return response()->json($log, 201);
     }
+
+    /** GET /api/activity-logs/recent-game */
+    public function getRecentGame(Request $request)
+    {
+        $log = ActivityLog::where('user_id', $request->user()->id)
+            ->where('activity_type', 'game')
+            ->whereNotNull('game_id')
+            ->latest('created_at')
+            ->first();
+            
+        return response()->json(['game_id' => $log ? $log->game_id : null]);
+    }
 }

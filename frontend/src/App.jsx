@@ -42,12 +42,14 @@ function Layout({ children }) {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
   const isResultPage = location.pathname === "/result";
+  const isAssessment = location.pathname === "/assessment";
+  const isGamesPage = location.pathname === "/games";
 
   return (
     <>
-      {!isLoginPage && !isResultPage && <Header />}
+      {!isLoginPage && !isResultPage && !isAssessment && !isGamesPage && <Header />}
       <main style={{ minHeight: "80vh" }}>{children}</main>
-      {!isLoginPage && !isResultPage && <Footer />}
+      {!isLoginPage && !isResultPage && !isAssessment && !isGamesPage && <Footer />}
     </>
   );
 }

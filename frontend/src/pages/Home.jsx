@@ -179,12 +179,32 @@ export default function Home() {
           <div className="home-problem-content">
             <div className="home-problem-text">
               <div className="problem-upperhead">The Problem</div>
-              <h2 className="problem-title">Burnout, Distraction, Anxiety, Loneliness...</h2>
-              <p className="problem-description">
-                Constant digital use is increasing these problems. Without proper habits or structure, feeling overwhelmed can become normal. Early signs of digital exhaustion can be identified through consistent patterns in daily behaviour and habits.
-                <br /><br />
-                <strong>The good news: Digital burnout can be measured, and early insight enables timely action...</strong>
-              </p>
+              <h2 className="problem-title">Exhaustion, Burnout, Distraction, Anxiety...</h2>
+              <div className="problem-description">
+                <div className="icon-list">
+                  <div className="icon-list-item">
+                    <span className="icon-wrapper problem-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    </span>
+                    <p>Constant digital use increases exhaustion, burnout, and distraction.</p>
+                  </div>
+                  <div className="icon-list-item">
+                    <span className="icon-wrapper problem-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    </span>
+                    <p>Without proper habits or structure, feeling overwhelmed can become normal.</p>
+                  </div>
+                  <div className="icon-list-item">
+                    <span className="icon-wrapper problem-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </span>
+                    <p>Early signs of digital exhaustion reflect consistently in daily behaviour and habits.</p>
+                  </div>
+                </div>
+                <p style={{ marginTop: '1.5rem' }}>
+                  <strong>The good news: Digital burnout can be measured, and early insight enables timely action...</strong>
+                </p>
+              </div>
             </div>
             <div className="home-problem-video">
               <a
@@ -223,14 +243,49 @@ export default function Home() {
             <div className="why-digital-container align-left bullet-text">
               <h5 className="why-digital-title">Why MindRest?</h5>
               <div className="flex-20">
-                <p className="_1-0-desktop-text">
-                  Digital wellness earlier focused on screen time and distraction control. Those ideas were important, but they addressed only surface-level issues.
-                  <br /><br />
-                  MindRest takes a deeper approach. <strong>It focuses on mental wellbeing in a data-driven, digital-first world.</strong>
-                  It helps students and working adults recognise early signs of digital exhaustion , burnout, and emotional overload using everyday behavioural patterns.
-                  <br /><br />
-                  It also enables timely action through calming games, guided exercises, and a journaling section with blogs to improve focus, balance, and emotional stability.
-                </p>
+                <div className="_1-0-desktop-text">
+                  <div className="icon-list">
+                    <div className="icon-list-item">
+                      <span className="icon-wrapper solution-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                      </span>
+                      <p><strong>Holistic Focus:</strong> We look beyond screen time to support your overall mental clarity.</p>
+                    </div>
+                    <div className="icon-list-item">
+                      <span className="icon-wrapper solution-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                      </span>
+                      <p><strong>AI Risk Alerts:</strong> Identify digital burnout early using your daily behavioral patterns.</p>
+                    </div>
+                    <div className="icon-list-item">
+                      <span className="icon-wrapper solution-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.7 16.15"></path></svg>
+                      </span>
+                      <p><strong>Calm Tools:</strong> Recharge with curated games, breathing exercises, and smart journaling.</p>
+                    </div>
+                    <div className="icon-list-item">
+                      <span className="icon-wrapper solution-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                      </span>
+                      <p><strong>Adaptive Insight:</strong> Our AI learns your rhythms to provide accurate, personalized wellness tips.</p>
+                    </div>
+                    <div className="icon-list-item">
+                      <span className="icon-wrapper solution-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                      </span>
+                      <p><strong>Secure Sanctuary:</strong> Your data is always encrypted and private, creating a safe space to grow.</p>
+                    </div>
+                  </div>
+                  <div className="learn-more-link-wrapper" style={{ marginTop: '30px' }}>
+                    <Link to="/about" className="learn-more-link">
+                      Learn more about our mission
+                      <svg className="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

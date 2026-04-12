@@ -68,13 +68,13 @@ export default function MindfulExercises() {
         {activeExercise && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-[#1d4d4e] flex flex-col items-center justify-center p-6 text-center"
+            className="fixed inset-0 z-[1100] bg-[#1d4d4e] flex flex-col items-center justify-center p-6 text-center"
           >
             <button
               onClick={() => setActiveExercise(null)}
-              className="absolute top-20 right-8 lg:top-24 lg:right-12 text-slate-400 hover:text-[#e76f51] hover:scale-110 transition-all z-[110] bg-white p-3 rounded-full shadow-lg border border-slate-100 flex items-center justify-center cursor-pointer"
+              className="absolute top-8 right-8 lg:top-12 lg:right-12 text-white/60 hover:text-white hover:bg-white/10 hover:scale-110 transition-all duration-300 z-[110] bg-white/5 p-4 rounded-full backdrop-blur-md border border-white/10 flex items-center justify-center cursor-pointer"
             >
-              <span className="material-symbols-outlined text-xl font-black">close</span>
+              <span className="material-symbols-outlined text-2xl font-light">close</span>
             </button>
 
             <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="max-w-xl w-full">

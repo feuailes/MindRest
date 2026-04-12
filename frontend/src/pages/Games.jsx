@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import "./Games.css";
 
 // gradFrom/gradTo drive the per-card Launch Sequence button gradient
 const MOCK_GAMES = [
-  { id: 1, game_id: 1, name: "Breathing Circle", description: "Guided breathing for instant calm.", color: "#b2e2d2", icon: "adjust", gradFrom: "#2A9D8F", gradTo: "#1d4d4f" },
   { id: 2, game_id: 2, name: "Bubble Pop", description: "Pop bubbles to release tension.", color: "#d1e9ff", icon: "bubble_chart", gradFrom: "#5ba4e0", gradTo: "#1d4d4f" },
   { id: 3, game_id: 3, name: "Reaction Test", description: "Test focus with rapid color changes.", color: "#ffd8d1", icon: "timer", gradFrom: "#e76f51", gradTo: "#b54b35" },
   { id: 4, game_id: 4, name: "Memory Match", description: "Find pairs of hidden symbols.", color: "#e2d1ff", icon: "grid_view", gradFrom: "#7c5cbf", gradTo: "#1d4d4f" },
@@ -18,47 +18,18 @@ const MOCK_GAMES = [
     icon: "palette",
     gradFrom: "#4cad60",
     gradTo: "#1d4d4f"
+  },
+  {
+    id: 7,
+    game_id: 7,
+    name: "Harmonic Waves",
+    description: "Draw soothing ripples in the digital water.",
+    color: "#e0f7fa",
+    icon: "water_drop",
+    gradFrom: "#00bcd4",
+    gradTo: "#1d4d4f"
   }
 ];
-
-// 1. Breathing Circle
-const BreathingCircle = () => {
-  const [phase, setPhase] = useState("Inhale");
-
-  useEffect(() => {
-    let isMounted = true;
-    const animateBreath = () => {
-      if (!isMounted) return;
-      setPhase("Inhale");
-      setTimeout(() => isMounted && setPhase("Hold"), 4000);
-      setTimeout(() => isMounted && setPhase("Exhale"), 8000);
-    };
-    animateBreath();
-    const interval = setInterval(animateBreath, 12000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <h2 className="text-5xl font-black text-[#1d4d4f] mb-20 italic-font">{phase}</h2>
-      <div className="relative flex items-center justify-center">
-        {/* Outer glowing ring */}
-        <div className="absolute w-72 h-72 rounded-full border border-[#b2e2d2] opacity-50"></div>
-        <div className="absolute w-80 h-80 rounded-full border border-[#b2e2d2] opacity-20"></div>
-        {/* Animated breathing circle */}
-        <motion.div
-          animate={{ scale: phase === "Inhale" ? 1.6 : phase === "Exhale" ? 1 : phase === "Hold" && 1.6 }}
-          transition={{ duration: 4, ease: "easeInOut" }}
-          className="w-40 h-40 bg-gradient-to-tr from-[#1d4d4f] to-[#2A9D8F] rounded-full shadow-[0_0_60px_rgba(42,157,143,0.4)] flex items-center justify-center"
-        >
-        </motion.div>
-      </div>
-    </div>
-  );
-};
 
 // 2. Bubble Pop
 const BubblePop = ({ onScoreUpdate }) => {
@@ -425,6 +396,49 @@ const ShadeFinder = ({ onScoreUpdate, onGameOver }) => {
   );
 };
 
+// 7. Harmonic Waves
+const HarmonicWaves = () => {
+  const [ripples, setRipples] = useState([]);
+
+  const addRipple = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const newRipple = { id: Date.now(), x, y };
+    setRipples((prev) => [...prev, newRipple]);
+    setTimeout(() => {
+      setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
+    }, 4000); // ripple duration
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center p-6">
+      <div className="text-center mb-8 bg-white/80 backdrop-blur-md px-10 py-5 rounded-full border border-white shadow-sm z-10 pointer-events-none">
+        <h2 className="text-xl font-black text-[#1d4d4f] tracking-widest uppercase">Harmonic Waves</h2>
+        <p className="text-xs text-[#00bcd4] mt-1 font-bold">Tap the screen to create calming ripples.</p>
+      </div>
+      <div 
+        onClick={addRipple} 
+        className="absolute inset-0 w-full h-full cursor-crosshair overflow-hidden"
+      >
+        <AnimatePresence>
+          {ripples.map((r) => (
+            <motion.div
+              key={r.id}
+              initial={{ width: 0, height: 0, opacity: 0.8 }}
+              animate={{ width: 1000, height: 1000, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 4, ease: "easeOut" }}
+              className="absolute rounded-full border-[3px] border-[#00bcd4]"
+              style={{ left: r.x, top: r.y, transform: "translate(-50%, -50%)" }}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
 
 export default function GamesPage() {
   const [activeGame, setActiveGame] = useState(null);
@@ -432,8 +446,31 @@ export default function GamesPage() {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showFinishScreen, setShowFinishScreen] = useState(false);
   const [currentScore, setCurrentScore] = useState(0);
+  const navigate = useNavigate();
+
+  const [recentGameId, setRecentGameId] = useState(null);
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://127.0.0.1:8000/api/activity-logs/recent-game", {
+          headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.game_id) setRecentGameId(data.game_id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recent game:", err);
+      }
+    };
+    fetchRecent();
+  }, []);
 
   const activeGameData = MOCK_GAMES.find(g => g.name === activeGame);
+  const heroGame = MOCK_GAMES.find(g => g.id === recentGameId) || MOCK_GAMES[0];
+  const subGames = MOCK_GAMES;
 
   // Timer logic
   useEffect(() => {
@@ -479,6 +516,10 @@ export default function GamesPage() {
   }, [showFinishScreen]);
 
   const handleStartGame = (gameName) => {
+    const data = MOCK_GAMES.find(g => g.name === gameName);
+    if (data) {
+      setRecentGameId(data.id);
+    }
     setActiveGame(gameName);
     setTimeLeft(180);
     setIsTimerActive(true);
@@ -506,86 +547,134 @@ export default function GamesPage() {
 
   const renderGame = () => {
     switch (activeGame) {
-      case "Breathing Circle": return <BreathingCircle />;
       case "Bubble Pop": return <BubblePop onScoreUpdate={setCurrentScore} />;
       case "Reaction Test": return <ReactionTest onScoreUpdate={setCurrentScore} />;
       case "Memory Match": return <MemoryMatch onScoreUpdate={setCurrentScore} />;
       case "Zen Sand": return <ZenSand />;
       case "Shade Finder": return <ShadeFinder onScoreUpdate={setCurrentScore} onGameOver={() => setShowFinishScreen(true)} />;
+      case "Harmonic Waves": return <HarmonicWaves />;
       default: return null;
     }
   };
 
   return (
-    <div className="min-h-screen font-['Plus_Jakarta_Sans'] pb-20 games-page">
+    <div className="min-h-screen font-['Plus_Jakarta_Sans'] pb-20 games-page relative overflow-hidden bg-[#fafcfa]">
+      
+      {/* AMBIENT BACKGROUND GLOWS */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#b2e2d2] opacity-30 blur-[150px] rounded-full pointer-events-none mix-blend-multiply" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#e2d1ff] opacity-40 blur-[150px] rounded-full pointer-events-none mix-blend-multiply" />
 
-      {/* PAGE HEADER — stronger visual hierarchy */}
-      <div className="text-center mb-10 px-4 pt-8 relative z-10">
-        <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[#2A9D8F] mb-3">
+      {/* MINIMAL BACK NAVIGATION */}
+      <button 
+        onClick={() => navigate("/dashboard")}
+        className="absolute top-8 left-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/40 border border-white/60 shadow-sm backdrop-blur-md hover:bg-white transition-all duration-300 hover:scale-105 group"
+      >
+        <span className="material-symbols-outlined text-[#1d4d4f] group-hover:-translate-x-1 transition-transform duration-300 font-bold">arrow_back</span>
+      </button>
+
+      {/* PAGE HEADER */}
+      <motion.div initial={{opacity: 0, y: -20}} animate={{opacity: 1, y: 0}} className="text-center mb-10 px-4 pt-12 xl:pt-16 relative z-10 flex flex-col items-center">
+        <span className="px-4 py-1.5 rounded-full bg-white/60 border border-white/80 shadow-sm backdrop-blur-md text-[9px] font-black uppercase tracking-[0.3em] text-[#2A9D8F] mb-6">
           Mindful Gaming
-        </p>
-        <h2 className="text-3xl md:text-4xl font-black text-[#1d4d4f] tracking-tight leading-tight">
+        </span>
+        <h2 className="text-4xl md:text-5xl font-black text-[#1d4d4f] tracking-tight leading-tight">
           Relax &amp; Reset
         </h2>
-        <p className="text-sm text-slate-400 max-w-sm mx-auto mt-3 leading-relaxed font-medium">
-          Short activities to reduce stress and sharpen focus — tuned to your current state.
+        <p className="text-sm md:text-base text-slate-500 max-w-md mx-auto mt-4 leading-relaxed font-medium">
+          Immersive activities designed to actively reduce cognitive load and sharpen your mental clarity.
         </p>
-      </div>
+      </motion.div>
 
-      {/* CATALOG GRID — Larger gap to fill the space visually */}
-      <div className="max-w-7xl mx-auto px-6 py-4 z-10 relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-20 mb-16">
-          {MOCK_GAMES.map((game) => (
-            <div
-              key={game.id}
-              className="game-card rounded-[1.75rem] flex flex-col items-start h-full group"
-            >
-              {/* All card content sit above the ::before shimmer — justify-center for vertical centering */}
-              <div className="relative z-10 flex flex-col items-center justify-center w-full h-full text-center">
+      {/* CATALOG GRID */}
+      <div className="max-w-6xl mx-auto px-6 py-4 z-10 relative">
+        <motion.div 
+          variants={{
+            hidden: { opacity: 0 },
+            show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+          }} 
+          initial="hidden" animate="show"
+          className="w-full flex flex-col gap-10"
+        >
+          {/* HERO CARD (Recently Played Game) */}
+          <motion.div 
+            variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } } }}
+            className="w-full relative group cursor-pointer"
+            onClick={() => handleStartGame(heroGame.name)}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[#2A9D8F]/20 to-[#b2e2d2]/10 rounded-[2.5rem] blur-2xl group-hover:blur-3xl transition-all duration-500 opacity-60"></div>
+            <div className="relative bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-300 group-hover:-translate-y-1">
+              
+              <div className="absolute right-[-5%] bottom-[-20%] opacity-[0.03] text-[30rem] leading-none pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-500 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                {heroGame.icon}
+              </div>
 
-                {/* Icon badge with soft glow ring matching game color — balanced margins */}
-                <div
-                  className="w-12 h-12 rounded-[0.9rem] mb-6 mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
-                  style={{
-                    background: `linear-gradient(135deg, ${game.color}60, ${game.color}20)`,
-                    border: `1.5px solid ${game.color}90`,
-                    boxShadow: `0 0 0 6px ${game.color}22`
-                  }}
-                >
-                  <span
-                    className="material-symbols-outlined text-xl"
-                    style={{ color: game.gradFrom, fontVariationSettings: "'FILL' 1" }}
-                  >
-                    {game.icon}
-                  </span>
+              <div className="p-8 md:p-14 flex flex-col md:flex-row items-center gap-10">
+                <div className="w-24 h-24 rounded-3xl flex-shrink-0 flex items-center justify-center bg-white shadow-xl shadow-[#2A9D8F]/10 border border-[#2A9D8F]/20">
+                  <span className="material-symbols-outlined text-5xl text-[#2A9D8F]" style={{ fontVariationSettings: "'FILL' 1" }}>{heroGame.icon}</span>
                 </div>
-
-                {/* Bold title — primary visual hierarchy at the center block */}
-                <h3 className="text-xl font-black mb-1.5 text-[#1d4d4f] tracking-tight leading-tight w-full">
-                  {game.name}
-                </h3>
-
-                {/* Subdued description — symmetrical spacing */}
-                <p className="text-slate-400 text-xs mb-10 font-medium leading-relaxed w-full max-w-[200px]">
-                  {game.description}
-                </p>
-
-                {/* Launch button — graduation tuned to this game's icon accent */}
-                <button
-                  onClick={() => handleStartGame(game.name)}
-                  className="w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-[0.16em] text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
-                  style={{
-                    background: `linear-gradient(135deg, ${game.gradFrom} 0%, ${game.gradTo} 100%)`,
-                    boxShadow: `0 6px 16px -4px ${game.gradFrom}55`
-                  }}
-                >
-                  Launch Sequence
-                </button>
+                <div className="flex-1 text-center md:text-left">
+                  <span className="inline-block px-3 py-1 bg-[#2A9D8F]/10 text-[#2A9D8F] text-[10px] font-black uppercase tracking-widest rounded-full mb-3">Recently Played</span>
+                  <h3 className="text-3xl md:text-4xl font-black text-[#1d4d4f] tracking-tight mb-3">{heroGame.name}</h3>
+                  <p className="text-slate-500 text-base md:text-lg font-medium leading-relaxed max-w-lg">{heroGame.description}</p>
+                </div>
+                <div className="flex-shrink-0 w-full md:w-auto">
+                  <button className="w-full md:w-auto px-8 py-4 bg-[#1d4d4f] hover:bg-[#2A9D8F] text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-colors shadow-lg">
+                    Begin Flow
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </motion.div>
 
+          {/* SECONDARY GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
+            {subGames.map((game) => (
+              <motion.div
+                variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}
+                key={game.id}
+                onClick={() => handleStartGame(game.name)}
+                className="group relative cursor-pointer h-full"
+              >
+                {/* Glow ring */}
+                <div 
+                  className="absolute inset-0 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-300 pointer-events-none"
+                  style={{ background: `linear-gradient(135deg, ${game.gradFrom}, ${game.gradTo})` }}
+                />
+
+                <div className="relative h-full bg-white/70 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group-hover:-translate-y-1">
+                  
+                  {/* Giant hidden background icon */}
+                  <div className="absolute right-[-15%] bottom-[-10%] opacity-[0.02] text-[15rem] leading-none pointer-events-none group-hover:scale-110 transition-transform duration-700 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {game.icon}
+                  </div>
+
+                  <div className="w-16 h-16 rounded-2xl mb-6 mx-auto flex items-center justify-center bg-white shadow-md border border-slate-50 transition-transform duration-300 group-hover:scale-110 group-hover:shadow-lg">
+                    <span className="material-symbols-outlined text-3xl" style={{ color: game.gradFrom, fontVariationSettings: "'FILL' 1" }}>
+                      {game.icon}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-black mb-2 text-slate-800 tracking-tight relative z-10 w-full">
+                    {game.name}
+                  </h3>
+                  
+                  <p className="text-slate-500 text-xs font-medium leading-relaxed mb-8 relative z-10 flex-1 w-full">
+                    {game.description}
+                  </p>
+
+                  <div className="w-full relative z-10 overflow-hidden rounded-xl h-12 flex items-center justify-center hover:bg-slate-50 transition-colors border border-slate-100 bg-white">
+                    <span 
+                      className="text-[10px] font-black uppercase tracking-widest transition-colors duration-300"
+                      style={{ color: game.gradFrom }}
+                    >
+                      Play
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       {/* GAME OVERLAY ENGINE */}
@@ -602,9 +691,9 @@ export default function GamesPage() {
 
             <button
               onClick={() => setActiveGame(null)}
-              className="absolute top-12 right-8 lg:top-16 lg:right-12 text-slate-400 hover:text-[#e76f51] hover:scale-110 transition-all z-[110] bg-white p-3 rounded-full shadow-lg border border-slate-100 flex items-center justify-center cursor-pointer"
+              className="absolute top-8 right-8 lg:top-12 lg:right-12 text-[#1d4d4f] hover:text-[#2A9D8F] hover:bg-white transition-all duration-300 z-[110] bg-white/40 backdrop-blur-md border border-white/60 shadow-sm w-12 h-12 rounded-full flex items-center justify-center cursor-pointer hover:scale-105"
             >
-              <span className="material-symbols-outlined text-xl font-black">close</span>
+              <span className="material-symbols-outlined font-bold">close</span>
             </button>
 
             <div className="relative z-10 w-full h-full flex items-center justify-center max-w-[1600px] mx-auto">

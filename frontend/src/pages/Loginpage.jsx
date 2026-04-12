@@ -110,7 +110,7 @@ export default function AuthPage() {
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <h1 className="title">MindRest</h1>
+        <h1 className="title"><span style={{ color: '#2A9D8F' }}>Mind</span><span style={{ color: '#E76F51' }}>Rest</span></h1>
         <p className="subtitle">
           {isLogin ? "Welcome back! Enter your credentials." : "Join us to track your digital wellness."}
         </p>

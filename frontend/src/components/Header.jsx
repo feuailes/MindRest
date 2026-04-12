@@ -7,21 +7,10 @@ import "./Header.css";
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const closeTimeout = useRef(null);
 
   const isSanctuaryActive = ["/exercises", "/games", "/journal"].includes(location.pathname);
 
-  const handleMouseEnter = () => {
-    if (closeTimeout.current) clearTimeout(closeTimeout.current);
-    setDropdownOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    closeTimeout.current = setTimeout(() => {
-      setDropdownOpen(false);
-    }, 300);
-  };
+  // Dropdown hover is handled by CSS
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -32,7 +21,7 @@ export default function Header() {
 
   return (
     <header className="header">
-      <div className="header-container container">
+      <div className="header-container">
         {/* LOGO */}
         <Link to="/" className="logo">
           <img src="/logo.png" alt="MindRest Logo" className="logo-img" />
@@ -50,22 +39,16 @@ export default function Header() {
           </Link>
 
           {/* GROUPED SECTION: SANCTUARY */}
-          <div
-            className={`nav-dropdown ${isSanctuaryActive ? "active" : ""}`}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
+          <div className={`nav-dropdown ${isSanctuaryActive ? "active" : ""}`}>
             <span className="dropdown-label">
-              MindHub <FontAwesomeIcon icon={faChevronDown} className="chevron" />
+              MindHub
             </span>
 
-            {dropdownOpen && (
-              <div className="dropdown-menu">
-                <Link to="/exercises">Exercises</Link>
-                <Link to="/games">Games</Link>
-                <Link to="/journal">Journal</Link>
-              </div>
-            )}
+            <div className="dropdown-menu">
+              <Link to="/exercises">Exercises</Link>
+              <Link to="/games">Games</Link>
+              <Link to="/journal">Journal</Link>
+            </div>
           </div>
 
           <Link to="/about" className={location.pathname === "/about" ? "active" : ""}>

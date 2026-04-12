@@ -3,22 +3,22 @@ import { motion } from 'framer-motion';
 
 const RESEARCH_DATA = [
     {
-        title: "Digital Eye Strain",
-        source: "Mayo Clinic – Screen Time Health",
-        description: "Article on how reducing screen exposure can improve eye comfort, posture, and general wellbeing.",
-        link: "https://mcpress.mayoclinic.org/living-well/5-ways-slimming-screentime-is-good-for-your-health/"
+        title: "I Did a Digital Detox: Here's What I Learned",
+        source: "Zapier Productivity Blog",
+        description: "A creator's personal account of undertaking a complete digital detox for a day, exploring the immediate clarity and focus it brought.",
+        link: "https://zapier.com/blog/digital-detox/"
     },
     {
-        title: "Dopamine Fasting",
-        source: "Wikipedia / General Science",
-        description: "Explanation of the dopamine fasting concept and its intended role in moderating tech‑driven behaviours.",
-        link: "https://en.wikipedia.org/wiki/Dopamine_fasting"
+        title: "7 Benefits of Escaping Digital Noise",
+        source: "PositivePsychology Blog",
+        description: "A deep dive into the psychological benefits of reducing screen time, escaping the noise, and reclaiming your emotional regulation.",
+        link: "https://positivepsychology.com/digital-detox/"
     },
     {
-        title: "Nature Exposure & Health",
-        source: "NIH – Research Review",
-        description: "Scientific review showing evidence that being in natural environments supports mental health and stress reduction.",
-        link: "https://pmc.ncbi.nlm.nih.gov/articles/PMC8125471/"
+        title: "How to Do a Digital Detox",
+        source: "Medical News Today",
+        description: "A comprehensive medical and psychological guide on setting boundaries with technology, managing screen time, and finding better balance.",
+        link: "https://www.medicalnewstoday.com/articles/digital-detox"
     }
 ];
 
