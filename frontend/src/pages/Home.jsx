@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faBrain, faLeaf, faUserGear, faChevronLeft, faChevronRight, faQuoteLeft } from "@fortawesome/free-solid-svg-icons";
 import "./Home.css";
@@ -107,6 +107,23 @@ const TestimonialSlider = () => {
 
 /* ---------- HOME ---------- */
 export default function Home() {
+  const navigate = useNavigate();
+
+  const handleCheckExhaustion = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/assessment");
+    } else {
+      // Direct guest users to signup, then form
+      navigate("/login", { 
+        state: { 
+          mode: "signup", 
+          from: "/assessment" 
+        } 
+      });
+    }
+  };
+
   return (
     <div className="home">
       {/* HERO – White section, vertical stack */}
@@ -124,9 +141,12 @@ export default function Home() {
               Predict digital exhaustion early.
               Balance your productivity and mental well-being with AI-driven insights based on your daily usage patterns.
             </p>
-            <Link to="/assessment">
-              <button className="home-hero-btn">Check Your Exhaustion Level</button>
-            </Link>
+            <button 
+              className="home-hero-btn" 
+              onClick={handleCheckExhaustion}
+            >
+              Check Your Exhaustion Level
+            </button>
           </div>
 
           <div className="home-hero-image">

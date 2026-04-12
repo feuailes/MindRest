@@ -454,6 +454,7 @@ export default function GamesPage() {
     const fetchRecent = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) return;
         const res = await fetch("http://127.0.0.1:8000/api/activity-logs/recent-game", {
           headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
         });
@@ -490,6 +491,7 @@ export default function GamesPage() {
     if (!activeGameData) return;
     try {
       const token = localStorage.getItem("token");
+      if (!token) return;
       await fetch("http://127.0.0.1:8000/api/activity-logs", {
         method: "POST",
         headers: {
@@ -566,7 +568,7 @@ export default function GamesPage() {
 
       {/* MINIMAL BACK NAVIGATION */}
       <button 
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate("/")}
         className="absolute top-8 left-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/40 border border-white/60 shadow-sm backdrop-blur-md hover:bg-white transition-all duration-300 hover:scale-105 group"
       >
         <span className="material-symbols-outlined text-[#1d4d4f] group-hover:-translate-x-1 transition-transform duration-300 font-bold">arrow_back</span>

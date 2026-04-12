@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ScreenExhaustionChart from "../components/ScreenExhaustionChart";
 
 export default function PredictionPage(props) {
   const navigate = useNavigate();
@@ -32,11 +33,11 @@ export default function PredictionPage(props) {
           const la = result.latest_assessment;
           setLocalData({
             passedRisk: la.risk_level,
-            score: (la.sleep_hours + la.stress_level + la.screen_time + (10 - la.mood_rating)) / 4,
+            score: (la.sleep_hours + la.stress_level + la.screen_time + la.mood_rating) / 4,
             screenTime: la.screen_time,
             sleep: la.sleep_hours,
             stress: la.stress_level,
-            focus: 10 - la.mood_rating
+            focus: la.mood_rating
           });
           setHistory(result.assessment_history || []);
         } else {
@@ -87,26 +88,35 @@ export default function PredictionPage(props) {
   };
 
   const getNeuralInsight = () => {
-    // Check for extreme outliers first
-    if (localData.sleep <= 3) return "You really need to get some sleep. Your body is tired.";
-    if (localData.screenTime >= 15) return "You have spent too much time looking at screens today. Give your eyes a long break.";
-    if (localData.stress >= 9) return "You are very stressed right now. You need to stop and take it easy.";
+    const insights = [];
+    const { stress, focus: mood, screenTime: st, sleep, passedRisk } = localData;
+    const isHigh = passedRisk.toLowerCase().includes("high");
+    const isModerate = passedRisk.toLowerCase().includes("moderate");
 
-    if (scoreNum >= 8) {
-      if (localData.sleep < 6) return "You are very tired because you didn't sleep enough.";
-      if (localData.screenTime > 12) return "Your eyes and brain are tired from too much screen time.";
-      if (localData.stress > 8) return "You are under a lot of pressure. You need to stop and rest.";
-      return "You are reaching your limit. Please take a long break.";
+    if (isHigh) {
+      if (stress >= 8) insights.push("Your stress levels are very high; you need to stop and rest.");
+      if (st >= 8) insights.push("Too much screen time is making you extremely tired.");
+      if (sleep >= 8) insights.push("You are very tired from lack of sleep.");
+      if (mood >= 8) insights.push("Your emotional energy is very low right now.");
+      if (insights.length === 0) insights.push("Your exhaustion level is high; a break is needed.");
+      insights.push("You may need a break and recovery time.");
+    } else if (isModerate) {
+      if (stress >= 7) insights.push("You're starting to get stressed; try taking a short break.");
+      if (st >= 7) insights.push("Your screen habits are starting to affect your energy.");
+      if (sleep >= 7) insights.push("A little more rest would help you feel better.");
+      if (insights.length === 0) insights.push("You're starting to feel tired; try balancing rest and work.");
+      insights.push("Try balancing screen time and rest.");
+    } else {
+      // Low risk / Balanced
+      if (stress >= 8 || st >= 8) {
+        insights.push("Even though you're doing okay, watch your stress and screen time today.");
+      } else {
+        insights.push("Your habits are currently well-balanced.");
+      }
+      insights.push("Your current habits are stable.");
     }
-    if (scoreNum >= 4) {
-      if (localData.stress > 6) return "You are starting to feel stressed. Try a quick break.";
-      if (localData.screenTime > 8) return "You have been on your phone or computer for a while.";
-      if (localData.sleep < 7) return "A little more rest would help you focus better.";
-      return "Your energy is dipping. A short pause would be good.";
-    }
-    if (localData.screenTime > 6) return "Try to spend a little less time on screens for the rest of the day.";
-    if (localData.mood > 8) return "You are in a great mood! This is a good time to get things done.";
-    return "You have a healthy balance. Keep doing what you're doing.";
+
+    return insights.join(" ");
   };
 
   const getDynamicContent = () => {
@@ -196,9 +206,6 @@ export default function PredictionPage(props) {
         <div className="bg-[#f1f5f9]/50 p-4 rounded-2xl mb-5">
            <div className="flex justify-between items-center mb-4 px-1">
               <h3 className="text-[10px] font-black text-slate-800 uppercase">Recovery Plan</h3>
-              {content.recoveryTime && (
-                <span className="text-[9px] font-black px-3 py-1 bg-white text-blue-500 rounded-full border border-slate-100 uppercase">{content.recoveryTime}</span>
-              )}
            </div>
            <div className="space-y-2">
               {content.steps.map((step, i) => (

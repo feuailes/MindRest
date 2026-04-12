@@ -55,6 +55,7 @@ class AssessmentController extends Controller
             'screen_time'  => $data['screen_time'],
             'mood_rating'  => $data['mood_rating'],
             'risk_level'   => $riskLabel, 
+            'created_at'   => now(),
         ]);
 
         return response()->json([

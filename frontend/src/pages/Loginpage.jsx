@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Loginpage.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { auth, googleProvider } from "../firebase";
 import { signInWithPopup } from "firebase/auth";
 
@@ -10,12 +10,18 @@ export default function AuthPage() {
     name: "",
     email: "",
     password: "",
-    password_confirmation: "",
-    gender: ""
+    password_confirmation: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.state?.mode === "signup") {
+      setIsLogin(false);
+    }
+  }, [location.state]);
 
   const handleAction = async (e) => {
     e.preventDefault();
@@ -52,7 +58,8 @@ export default function AuthPage() {
         const displayName = data.user?.name || formData.name;
         localStorage.setItem("userName", displayName);
 
-        navigate("/dashboard");
+        const from = location.state?.from || "/dashboard";
+        navigate(from, { replace: true });
       } else {
         setError(data.message || "Authentication failed.");
       }
@@ -94,8 +101,10 @@ export default function AuthPage() {
       if (response.ok) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("token", data.token);
-        localStorage.setItem("userName", data.user.name);
-        navigate("/dashboard");
+        localStorage.setItem("userName", data.user?.name || "User");
+        
+        const from = location.state?.from || "/dashboard";
+        navigate(from, { replace: true });
       } else {
         setError(data.message || "Google Sign-In failed.");
       }
@@ -110,7 +119,7 @@ export default function AuthPage() {
   return (
     <div className="login-wrapper">
       <div className="login-card">
-        <h1 className="title"><span style={{ color: '#2A9D8F' }}>Mind</span><span style={{ color: '#E76F51' }}>Rest</span></h1>
+        <h1 className="title"><span style={{ color: '#264653' }}>Mind</span><span style={{ color: '#E76F51' }}>Rest</span></h1>
         <p className="subtitle">
           {isLogin ? "Welcome back! Enter your credentials." : "Join us to track your digital wellness."}
         </p>
@@ -129,17 +138,6 @@ export default function AuthPage() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
-              </div>
-              <div className="input-group">
-                <select
-                  className="login-input"
-                  required
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
               </div>
             </>
           )}
@@ -162,6 +160,18 @@ export default function AuthPage() {
               required
             />
           </div>
+
+          {!isLogin && (
+            <div className="input-group">
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                className="login-input"
+                onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
+                required
+              />
+            </div>
+          )}
 
           <button type="submit" className="login-btn" disabled={loading}>
             {(loading && formData.email) ? "Processing..." : isLogin ? "Sign In" : "Create Account"}

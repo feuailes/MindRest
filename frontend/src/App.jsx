@@ -40,16 +40,19 @@ function ProtectedRoute({ children }) {
 
 function Layout({ children }) {
   const location = useLocation();
+  const isDashboard = location.pathname === "/dashboard";
   const isLoginPage = location.pathname === "/login";
   const isResultPage = location.pathname === "/result";
   const isAssessment = location.pathname === "/assessment";
   const isGamesPage = location.pathname === "/games";
 
+  const hideNavigation = isDashboard || isLoginPage || isResultPage || isAssessment || isGamesPage;
+
   return (
     <>
-      {!isLoginPage && !isResultPage && !isAssessment && !isGamesPage && <Header />}
-      <main style={{ minHeight: "80vh" }}>{children}</main>
-      {!isLoginPage && !isResultPage && !isAssessment && !isGamesPage && <Footer />}
+      {!hideNavigation && <Header />}
+      <main style={{ minHeight: isDashboard ? "100vh" : "80vh" }}>{children}</main>
+      {!hideNavigation && <Footer />}
     </>
   );
 }
@@ -59,7 +62,10 @@ export default function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route 
+            path="/" 
+            element={<Home />} 
+          />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/assessment" element={<Form />} />
 
@@ -74,14 +80,7 @@ export default function App() {
           />
 
           <Route path="/result" element={<PredictionPage />} />
-          <Route
-            path="/games"
-            element={
-              <ProtectedRoute>
-                <AllGamesCard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/games" element={<AllGamesCard />} />
           <Route path="/exercises" element={<MindfulExercises />} />
           <Route path="/reset" element={<DailyReset />} />
           <Route path="/journal" element={<Journal />} />

@@ -5,7 +5,7 @@
     align-items: center;
     width: 100%;
     height: 100%;
-    padding: 0 40px; /* Increased padding for extreme left/right look */
+    padding: 0 24px; /* Reduced to match OpenHeart's extreme spacing */
 }
 
 .header {
@@ -91,61 +91,26 @@
 
 .header-login-btn {
     text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.875rem; /* Clean text-sm size */
+    font-weight: 500;
     color: #ffffff;
     background-color: var(--primary-dark-teal, teal);
-    padding: 0 24px;
-    height: 38px;
-    border-radius: 2px; /* Nearly rectangular */
+    padding: 8px 20px; /* Matching OpenHeart py-2 px-5 roughly */
+    height: auto; /* Allow padding to define height */
+    border-radius: 6px; /* Matching OpenHeart rounded-md */
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    letter-spacing: 0.3px;
-    position: relative;
-    transition: all 0.2s ease;
-    overflow: hidden;
-}
-
-/* Cleaner Folded Corners - OpenHeart Style (Top Right & Bottom Left) */
-.header-login-btn::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 12px 12px 0;
-    border-color: #ffffff #ffffff rgba(0,0,0,0.2) rgba(0,0,0,0.2);
-    transition: border-color 0.2s ease;
-}
-
-.header-login-btn::before {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 12px 0 0 12px;
-    border-color: rgba(0,0,0,0.2) transparent transparent #ffffff;
-    transition: border-color 0.2s ease;
+    letter-spacing: 0.2px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .header-login-btn:hover {
-    background-color: #143a3c;
+    background-color: #1a4446;
     transform: translateY(-1px);
-}
-
-.header-login-btn:hover::after {
-    border-color: #ffffff #ffffff rgba(0,0,0,0.3) rgba(0,0,0,0.3);
-}
-
-.header-login-btn:hover::before {
-    border-color: rgba(0,0,0,0.3) transparent transparent #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-menu {

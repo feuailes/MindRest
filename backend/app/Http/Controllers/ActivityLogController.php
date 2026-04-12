@@ -25,6 +25,7 @@ class ActivityLogController extends Controller
             'activity_type' => $data['activity_type'],
             'duration_minutes' => $data['duration_minutes'],
             'score' => $data['score'] ?? null,
+            'created_at' => now(),
         ]);
         
         return response()->json($log, 201);

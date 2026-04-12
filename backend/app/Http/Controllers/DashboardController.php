@@ -17,7 +17,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // Last 7 mood logs
+        // Last 7 mood logs for the sparkline
         $moodLogs = MoodLog::where('user_id', $user->id)
             ->latest('log_date')
             ->take(7)
@@ -27,20 +27,58 @@ class DashboardController extends Controller
                 'score' => $log->mood_score,
             ]);
 
-        // Recent journals (3)
-        $journals = JournalEntry::where('user_id', $user->id)
-            ->latest()
-            ->take(3)
-            ->get(['id', 'title', 'mood_tag', 'created_at']);
-
-        // Assessment History (last 5)
+        // Assessment History with Deep Details
         $history = Assessment::where('user_id', $user->id)
             ->latest()
-            ->take(5)
-            ->get();
+            ->take(10)
+            ->map(function($a) use ($user) {
+                $date = Carbon::parse($a->created_at ?? now())->toDateString();
+                
+                // Fetch specific activities for this day
+                $a->activities = ActivityLog::where('user_id', $user->id)
+                    ->whereDate('created_at', $date)
+                    ->with(['game', 'exercise'])
+                    ->get()
+                    ->map(fn($act) => [
+                        'type' => $act->activity_type,
+                        'name' => ($act->activity_type === 'game' ? $act->game?->name : $act->exercise?->name) ?? 'Unidentified',
+                        'duration' => $act->duration_minutes,
+                        'score' => $act->score
+                    ]);
 
-        // Latest assessment
-        $latestAssessment = $history->first();
+                // Daily Counts for the summary pills
+                $a->games_count = $a->activities->where('type', 'game')->count();
+                $a->exercises_count = $a->activities->where('type', 'exercise')->count();
+                
+                // Journal Vibes
+                $journal = JournalEntry::where('user_id', $user->id)
+                    ->whereDate('created_at', $date)
+                    ->latest()
+                    ->first();
+                $a->journals_count = $journal ? 1 : 0;
+                $a->mood_tag = $journal?->mood_tag;
+                
+                return $a;
+            });
+
+        // Weekly Review (This Week vs Last Week)
+        $thisWeekStart = Carbon::now()->startOfWeek();
+        $lastWeekStart = Carbon::now()->subWeek()->startOfWeek();
+        $lastWeekEnd   = Carbon::now()->subWeek()->endOfWeek();
+
+        $thisWeekScores = Assessment::where('user_id', $user->id)->where('created_at', '>=', $thisWeekStart)->pluck('mood_rating');
+        $lastWeekScores = Assessment::where('user_id', $user->id)->whereBetween('created_at', [$lastWeekStart, $lastWeekEnd])->pluck('mood_rating');
+
+        $thisWeekAvg = $thisWeekScores->avg() ?? 0;
+        $lastWeekAvg = $lastWeekScores->avg() ?? 0;
+        $improvement = $lastWeekAvg > 0 ? (($thisWeekAvg - $lastWeekAvg) / $lastWeekAvg) * 100 : 0;
+
+        $weeklyReview = [
+            'avg_score' => round($thisWeekAvg, 1),
+            'improvement_pct' => round($improvement, 1),
+            'total_focus_minutes' => ActivityLog::where('user_id', $user->id)->where('created_at', '>=', $thisWeekStart)->sum('duration_minutes'),
+            'top_mood' => JournalEntry::where('user_id', $user->id)->where('created_at', '>=', $thisWeekStart)->selectRaw('mood_tag, count(*) as count')->groupBy('mood_tag')->orderByDesc('count')->first()?->mood_tag ?? 'Stable',
+        ];
 
         // Stats
         $streak        = $this->calculateStreak($user->id);
@@ -49,16 +87,12 @@ class DashboardController extends Controller
         $exerciseCount = ActivityLog::where('user_id', $user->id)->where('activity_type', 'exercise')->count();
         $gameCount     = ActivityLog::where('user_id', $user->id)->where('activity_type', 'game')->count();
 
-        // Digital Health Score — server-side composite
         $digitalHealthScore = $this->calculateHealthScore(
-            $latestAssessment?->mood_rating ?? $avgMoodScore,
+            $history->first()?->mood_rating ?? $avgMoodScore,
             $journalCount,
             $exerciseCount,
             $gameCount
         );
-
-        // Insights history (lightweight — no AI call here)
-        $insights = $insightService->getRecentHistory($user->id);
 
         return response()->json([
             'user'                 => $user->only('id', 'name', 'email'),
@@ -68,10 +102,8 @@ class DashboardController extends Controller
             'exercise_count'       => $exerciseCount,
             'game_count'           => $gameCount,
             'mood_trend'           => $moodLogs->reverse()->values(),
-            'recent_journals'      => $journals,
-            'latest_assessment'    => $latestAssessment,
             'assessment_history'   => $history,
-            'history'              => $insights,
+            'weekly_review'        => $weeklyReview,
             'digital_health_score' => $digitalHealthScore,
         ]);
     }

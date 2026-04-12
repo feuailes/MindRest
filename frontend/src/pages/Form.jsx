@@ -13,20 +13,20 @@ export default function Assessment() {
     screentime: 3, sleep: 8, stress: 3, mood: 8
   });
 
-  const screenTimeMap = [1, 3, 5, 7, 9, 11, 13, 15, 17, 18];
-  
+  const screenTimeMap = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
   const sleepLabels = [
-    "Perfect Rest", "Very Good", "Good", "Fair", "Average", 
+    "Perfect Rest", "Very Good", "Good", "Fair", "Average",
     "Disturbed", "Poor", "Very Poor", "Exhausted", "No Sleep"
   ];
 
   const stressLabels = [
-    "Very Relaxed", "Calm", "Comfortable", "Mild Pressure", "Busy", 
+    "Very Relaxed", "Calm", "Comfortable", "Mild Pressure", "Busy",
     "Tense", "Stressed", "Very High Stress", "Near Burnout", "Extreme Overload"
   ];
-  
+
   const moodLabels = [
-    "Excellent", "Happy", "Cheerful", "Stable", "Neutral", 
+    "Excellent", "Happy", "Cheerful", "Stable", "Neutral",
     "Irritable", "Low", "Very Low", "Depressed/Angry", "Emotionally Empty"
   ];
 
@@ -58,119 +58,106 @@ export default function Assessment() {
   const meterPercentage = (currentRiskScore / 10) * 100;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center p-4 font-['Inter',_sans-serif]">
-      <div className="w-full max-w-xl">
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-6 text-sm font-semibold"
-        >
-          <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-          Back to Home
-        </button>
+    <div className="h-screen bg-[#fafafa] flex flex-col items-center justify-center p-4 font-['Inter',_sans-serif] overflow-hidden relative">
+      {/* Back Arrow - Leftmost Top Corner */}
+      <button
+        onClick={() => navigate("/")}
+        className="fixed top-8 left-8 text-slate-400 hover:text-[#2A9D8F] transition-all bg-white shadow-sm hover:shadow-md w-10 h-10 rounded-xl flex items-center justify-center z-[100]"
+        title="Back to Home"
+      >
+        <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+      </button>
 
-        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-slate-100 p-8 md:p-10 w-full relative overflow-hidden">
-          
-          {/* Minimalist Header Gauge */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-slate-50">
-             <div 
-               className="h-full transition-all duration-500 ease-out" 
-               style={{ 
-                 width: `${meterPercentage}%`, 
-                 backgroundColor: meterPercentage > 60 ? '#E76F51' : meterPercentage > 40 ? '#F4A261' : '#2A9D8F' 
-               }}
-             />
+      <div className="w-full max-w-xl animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="bg-white rounded-[2.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.02)] border border-slate-100 p-8 md:p-14 w-full relative overflow-hidden">
+
+
+
+          <div className="mb-14 text-center">
+            <h1 className="text-4xl font-black tracking-tight leading-tight">
+              <span style={{ color: '#264653' }}>Mind</span>
+              <span style={{ color: '#E76F51' }}>Rest</span>
+              <span className="text-[#1d4d4f] block md:inline md:ml-3">Assessment</span>
+            </h1>
+            <p className="text-[10px] text-slate-400 mt-3 uppercase tracking-[0.3em] font-bold opacity-80">Predict your digital exhaustion risk.</p>
           </div>
 
-          <div className="mb-8 mt-2 flex justify-between items-end">
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-[#1d4d4f]">Cognitive Load</h1>
-              <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Live Assessment</p>
-            </div>
-            <div className="text-right">
-              <span className="text-3xl font-black text-[#E76F51]">{currentRiskScore}</span>
-              <span className="text-sm font-bold text-slate-300">/10</span>
-            </div>
-          </div>
+          <div className="flex flex-col gap-12">
 
-          <div className="flex flex-col gap-8">
-            
             {/* Screen Time */}
-            <div className="w-full flex flex-col gap-2">
-              <div className="flex justify-between items-center w-full">
-                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-slate-400">desktop_windows</span>
-                  Screen Usage
+            <div className="w-full flex flex-col gap-5">
+              <div className="flex justify-between items-center w-full px-1">
+                <label className="text-[13px] font-bold text-slate-500 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px] text-[#2A9D8F] opacity-70">desktop_windows</span>
+                  Daily Screen Usage
                 </label>
-                <div className="text-right flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">HOURS</span>
-                  <span className="text-sm font-bold text-slate-900">{screenTimeMap[inputs.screentime - 1]}h+</span>
+                <div className="text-right flex items-baseline gap-1.5">
+                  <span className="text-lg font-black text-[#1d4d4f]">{screenTimeMap[inputs.screentime - 1]}</span>
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">HRS</span>
                 </div>
               </div>
               <input
                 type="range" min="1" max="10"
                 value={inputs.screentime}
                 onChange={(e) => setInputs({ ...inputs, screentime: parseInt(e.target.value) })}
-                className="w-full accent-slate-800 outline-none h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#1d4d4f] outline-none h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer"
               />
             </div>
 
             {/* Stress */}
-            <div className="w-full flex flex-col gap-2">
-              <div className="flex justify-between items-center w-full">
-                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-slate-400">bolt</span>
-                  Stress Level
+            <div className="w-full flex flex-col gap-5">
+              <div className="flex justify-between items-center w-full px-1">
+                <label className="text-[13px] font-bold text-slate-500 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px] text-[#2A9D8F] opacity-70">bolt</span>
+                  Perceived Stress
                 </label>
-                <div className="text-right flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{stressLabels[inputs.stress - 1]}</span>
-                  <span className="text-sm font-bold text-slate-900">{inputs.stress}</span>
+                <div className="text-right">
+                  <span className="text-[10px] font-black text-[#E76F51] uppercase tracking-widest bg-[#E76F51]/5 px-2 py-1 rounded-md">{stressLabels[inputs.stress - 1]}</span>
                 </div>
               </div>
               <input
                 type="range" min="1" max="10"
                 value={inputs.stress}
                 onChange={(e) => setInputs({ ...inputs, stress: parseInt(e.target.value) })}
-                className="w-full accent-slate-800 outline-none h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#1d4d4f] outline-none h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer"
               />
             </div>
 
             {/* Sleep */}
-            <div className="w-full flex flex-col gap-2">
-              <div className="flex justify-between items-center w-full">
-                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-slate-400">bedtime</span>
+            <div className="w-full flex flex-col gap-5">
+              <div className="flex justify-between items-center w-full px-1">
+                <label className="text-[13px] font-bold text-slate-500 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px] text-[#2A9D8F] opacity-70">bedtime</span>
                   Sleep Quality
                 </label>
-                <div className="text-right flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{sleepLabels[inputs.sleep - 1]}</span>
-                  <span className="text-sm font-bold text-slate-900">{inputs.sleep}</span>
+                <div className="text-right">
+                  <span className="text-[10px] font-black text-[#2A9D8F] uppercase tracking-widest bg-[#2A9D8F]/5 px-2 py-1 rounded-md">{sleepLabels[inputs.sleep - 1]}</span>
                 </div>
               </div>
               <input
                 type="range" min="1" max="10"
                 value={inputs.sleep}
                 onChange={(e) => setInputs({ ...inputs, sleep: parseInt(e.target.value) })}
-                className="w-full accent-slate-800 outline-none h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#1d4d4f] outline-none h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer"
               />
             </div>
 
             {/* Mood */}
-            <div className="w-full flex flex-col gap-2">
-              <div className="flex justify-between items-center w-full">
-                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-slate-400">mood</span>
+            <div className="w-full flex flex-col gap-5">
+              <div className="flex justify-between items-center w-full px-1">
+                <label className="text-[13px] font-bold text-slate-500 flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[20px] text-[#2A9D8F] opacity-70">mood</span>
                   Current Mood
                 </label>
-                <div className="text-right flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{moodLabels[inputs.mood - 1]}</span>
-                  <span className="text-sm font-bold text-slate-900">{inputs.mood}</span>
+                <div className="text-right">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{moodLabels[inputs.mood - 1]}</span>
                 </div>
               </div>
               <input
                 type="range" min="1" max="10"
                 value={inputs.mood}
                 onChange={(e) => setInputs({ ...inputs, mood: parseInt(e.target.value) })}
-                className="w-full accent-slate-800 outline-none h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#1d4d4f] outline-none h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer"
               />
             </div>
 
@@ -179,17 +166,17 @@ export default function Assessment() {
           <button
             onClick={getPrediction}
             disabled={loading}
-            className="w-full mt-10 bg-[#2A9D8F] hover:bg-[#1d4d4f] text-white font-black py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 text-sm tracking-widest uppercase"
+            className="w-full mt-14 bg-[#1d4d4f] hover:bg-[#2A9D8F] text-white font-black py-5 rounded-[1.5rem] transition-all shadow-[0_10px_30px_rgba(29,77,79,0.15)] hover:shadow-[0_15px_35px_rgba(42,157,143,0.3)] disabled:opacity-50 text-[11px] tracking-[0.3em] uppercase"
           >
-            {loading ? "Analyzing Pattern..." : "Generate Analysis"}
+            {loading ? "Analyzing..." : "Get Your Result"}
           </button>
 
         </div>
       </div>
 
       {showPopup && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-lg">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-lg transform transition-all animate-in zoom-in slide-in-from-bottom-4 duration-500">
             <PredictionPage
               onClose={() => setShowPopup(false)}
               passedRisk={risk}
@@ -203,20 +190,26 @@ export default function Assessment() {
         </div>
       )}
 
-      {/* Global minimal custom slider styling */}
+      {/* Modern Slider Polish */}
       <style>{`
         input[type='range']::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 22px;
-          height: 22px;
-          background: #2A9D8F;
-          border: 4px solid #ffffff;
+          width: 24px;
+          height: 24px;
+          background: #ffffff;
+          border: 6px solid #1d4d4f;
           border-radius: 50%;
-          box-shadow: 0 2px 6px rgba(42,157,143,0.4);
-          transition: transform 0.1s;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          cursor: grab;
+        }
+        input[type='range']::-webkit-slider-thumb:hover {
+          border-color: #2A9D8F;
+          transform: scale(1.1);
         }
         input[type='range']::-webkit-slider-thumb:active {
-          transform: scale(1.15);
+          transform: scale(1.2);
+          cursor: grabbing;
         }
       `}</style>
     </div>
