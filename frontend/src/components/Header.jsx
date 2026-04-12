@@ -60,13 +60,16 @@ export default function Header() {
         <div className="header-actions">
           {localStorage.getItem("token") ? (
             <div className="user-session">
-              <Link to="/dashboard" className="header-login-btn">Get Started</Link>
+              <span className="user-name">
+                {localStorage.getItem("userName") || "Member"}
+              </span>
               <button onClick={handleLogout} className="logout-btn" title="Sign Out">
                 <FontAwesomeIcon icon={faSignOutAlt} />
+                <span>Logout</span>
               </button>
             </div>
           ) : (
-            <Link to="/" className="header-login-btn">Get Started</Link>
+            <Link to="/login" className="header-login-btn">Get Started</Link>
           )}
         </div>
       </div>

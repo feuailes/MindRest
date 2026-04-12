@@ -21,14 +21,14 @@ ChartJS.register(
 
 const RecoveryImpactChart = ({ data }) => {
   const chartData = {
-    labels: ['Active Days (Mind Games/Exercise)', 'Quiet Days (Assessments Only)'],
+    labels: ['Active Days', 'Quiet Days'],
     datasets: [
       {
         label: 'Average Mood Score',
         data: [data?.activity_avg || 0, data?.neutral_avg || 0],
         backgroundColor: (context) => {
             const index = context.dataIndex;
-            return index === 0 ? '#264653' : '#94A3B840';
+            return index === 0 ? '#E76F51' : 'rgba(255, 255, 255, 0.2)';
         },
         borderRadius: 12,
         barThickness: 60,
@@ -43,12 +43,12 @@ const RecoveryImpactChart = ({ data }) => {
       y: {
         beginAtZero: true,
         max: 10,
-        grid: { color: '#F1F5F9' },
-        ticks: { color: '#94A3B8', font: { weight: '700' } }
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+        ticks: { color: 'rgba(255, 255, 255, 0.6)', font: { weight: '700' } }
       },
       x: {
         grid: { display: false },
-        ticks: { color: '#64748B', font: { weight: '800', size: 11 } }
+        ticks: { color: 'rgba(255, 255, 255, 0.8)', font: { weight: '800', size: 11 } }
       }
     },
     plugins: {

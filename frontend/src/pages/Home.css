@@ -69,6 +69,28 @@
   box-shadow: 0 10px 20px rgba(29, 77, 79, 0.15);
 }
 
+.hero-cta-group {
+  display: flex;
+  gap: 20px;
+}
+
+.home-hero-btn-secondary {
+  background: white;
+  color: var(--primary-teal);
+  padding: 18px 36px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 2px solid var(--primary-teal);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.home-hero-btn-secondary:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+}
+
 .home-hero-image {
   flex: 1;
   display: flex;

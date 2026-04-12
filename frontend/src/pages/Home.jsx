@@ -141,12 +141,20 @@ export default function Home() {
               Predict digital exhaustion early.
               Balance your productivity and mental well-being with AI-driven insights based on your daily usage patterns.
             </p>
-            <button 
-              className="home-hero-btn" 
-              onClick={handleCheckExhaustion}
-            >
-              Check Your Exhaustion Level
-            </button>
+            <div className="hero-cta-group">
+              <button 
+                className="home-hero-btn" 
+                onClick={handleCheckExhaustion}
+              >
+                Check Exhaustion
+              </button>
+              <button 
+                className="home-hero-btn-secondary"
+                onClick={() => navigate("/about")}
+              >
+                Learn More
+              </button>
+            </div>
           </div>
 
           <div className="home-hero-image">

@@ -421,7 +421,7 @@ export default function Dashboard() {
            </div>
 
            <div className="card bento-card chart-card shadow-premium recovery-card-bg">
-              <h3 className="card-title white-text">Recovery Impact Proved</h3>
+              <h3 className="card-title white-text">Activity vs. Mood Analysis</h3>
               <p className="chart-subtitle white-text">Your Wellness on Activity Days vs Quiet Days</p>
               <div className="chart-wrapper">
                  <RecoveryImpactChart data={data?.recovery_impact} />
