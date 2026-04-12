@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DriftChart from "../components/Driftchart";
 import ScreenExhaustionChart from "../components/ScreenExhaustionChart";
+import SleepMoodChart from "../components/SleepMoodChart";
+import RecoveryImpactChart from "../components/RecoveryImpactChart";
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -103,7 +105,7 @@ export default function Dashboard() {
   if (loading) return (
     <div className="loader-container">
       <div className="loader-pulse"></div>
-      <p>Initializing Neural Flow...</p>
+      <p>Loading your wellness dashboard...</p>
       <style>{`
         .loader-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; color: #64748b; font-weight: 700; gap: 20px; }
         .loader-pulse { width: 50px; height: 50px; background: #264653; border-radius: 50%; animation: pulse 1.5s infinite; }
@@ -206,7 +208,7 @@ export default function Dashboard() {
     <div className="tab-content animate-fade-in">
       <div className="content-header">
         <h1>Welcome back, {userName.split(" ")[0]}</h1>
-        <p className="subtitle">Visualizing your neural wellness foundations.</p>
+        <p className="subtitle">Track your wellness and daily activity.</p>
       </div>
 
       {/* STATS STRIP */}
@@ -230,7 +232,7 @@ export default function Dashboard() {
       {/* TREND CHART */}
       <div className="trend-container card">
         <div className="card-header">
-          <h3 className="card-title">7-Day Exhaustion Trend</h3>
+          <h3 className="card-title">7-Day Stress & Energy Trend</h3>
           <span className="trend-badge">Analysis Live</span>
         </div>
         <div className="chart-box" style={{ height: '220px' }}>
@@ -246,26 +248,26 @@ export default function Dashboard() {
       <div className="bento-grid">
         {/* FULL CIRCLE GAUGE */}
         <div className="card bento-card gauge-bento">
-          <h3 className="card-title">Digital Health</h3>
+          <h3 className="card-title">Wellness Score</h3>
           <div className="gauge-full-box">
              <Doughnut data={gaugeData} options={{ cutout: '82%', plugins: { tooltip: { enabled: false }, legend: { display: false } } }} />
              <div className="gauge-full-info">
                 <span className="g-score">{healthData.score}</span>
-                <span className="g-label">{healthData.label}</span>
+                 <span className="g-label">{healthData.label}</span>
              </div>
           </div>
-          <p className="card-note">Composite wellness score based on mood stability and daily neural engagement.</p>
+          <p className="card-note">A score based on your mood and daily activity.</p>
         </div>
 
         {/* AI INSIGHT */}
         <div className="card bento-card ai-bento">
-           <h3 className="card-title">Neural Insights</h3>
+          <h3 className="card-title">Personalized Insights</h3>
            <div className="ai-content">
-              <div className="ai-pulp">
+               <div className="ai-pulp">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M12 7v5l2 2"/></svg>
               </div>
               <div className="ai-text-box">
-                 {insightLoading ? <div className="shimmer-text">Refining insights...</div> : <p>"{aiInsight}"</p>}
+                 {insightLoading ? <div className="shimmer-text">Updating insights...</div> : <p>"{aiInsight}"</p>}
               </div>
            </div>
            <div className="quick-nav-box">
@@ -378,7 +380,7 @@ export default function Dashboard() {
       labels: ['High', 'Moderate', 'Optimal'],
       datasets: [{
         data: [high, moderate, Math.max(0, optimal)],
-        backgroundColor: ['#ef4444', '#E76F51', '#2A9D8F'],
+        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
         borderWidth: 0,
         hoverOffset: 4
       }]
@@ -391,27 +393,38 @@ export default function Dashboard() {
           <p className="subtitle">Analysis of your wellness data.</p>
         </div>
         <div className="analytics-grid">
-           <div className="card bento-card chart-card">
-              <h3 className="card-title">Exhaustion Distribution</h3>
+           <div className="card bento-card chart-card shadow-soft">
+              <h3 className="card-title">Exhaustion Risk Profile</h3>
               <div className="chart-wrapper pie-container">
                 <Doughnut data={distributionData} options={{ maintainAspectRatio: false }} />
               </div>
-              <p className="chart-note">Frequency of your mental load states.</p>
+              <p className="chart-note">Frequency of your mental exhaustion risk levels.</p>
            </div>
            
-           <div className="card bento-card chart-card">
-              <h3 className="card-title">Emotional Drift</h3>
-              <div className="chart-wrapper"><DriftChart data={data?.mood_trend || []} /></div>
+           <div className="card bento-card chart-card shadow-soft">
+              <h3 className="card-title">Sleep vs Mood</h3>
+              <p className="chart-subtitle">Does rest improve your days?</p>
+              <div className="chart-wrapper">
+                 <SleepMoodChart data={data?.sleep_mood_data} />
+              </div>
            </div>
            
-           <div className="card bento-card chart-card full-width-chart shadow-soft">
-              <h3 className="card-title">Neural Load Correlation</h3>
-              <p className="chart-subtitle">Screen Time vs Exhaustion Level</p>
+           <div className="card bento-card chart-card shadow-soft">
+              <h3 className="card-title">Screen Time Impact</h3>
+              <p className="chart-subtitle">Digital Habits vs Stress Level</p>
               <div className="chart-wrapper">
                  <ScreenExhaustionChart 
                     history={data?.assessment_history} 
                     currentPoint={data?.assessment_history?.[0] ? { x: data.assessment_history[0].screen_time, y: data.assessment_history[0].mood_rating } : null}
                  />
+              </div>
+           </div>
+
+           <div className="card bento-card chart-card shadow-premium recovery-card-bg">
+              <h3 className="card-title white-text">Recovery Impact Proved</h3>
+              <p className="chart-subtitle white-text">Your Wellness on Activity Days vs Quiet Days</p>
+              <div className="chart-wrapper">
+                 <RecoveryImpactChart data={data?.recovery_impact} />
               </div>
            </div>
         </div>
@@ -516,6 +529,8 @@ export default function Dashboard() {
         .shadow-premium { box-shadow: 0 25px 50px -12px rgba(38, 70, 83, 0.25); }
         .shadow-soft { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
         .chart-subtitle { font-size: 11px; color: #94a3b8; margin-bottom: 20px; font-weight: 800; text-transform: uppercase; }
+        .white-text { color: white !important; }
+        .recovery-card-bg { background: #264653; border: none; }
 
         .chart-wrapper { height: 250px; position: relative; }
         .chart-note { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 15px; font-weight: 600; }
