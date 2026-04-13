@@ -21,6 +21,7 @@ Route::post('/google-login', [AuthController::class, 'googleLogin']);
 Route::get('/exercises', [ExerciseController::class, 'index']);
 Route::get('/games', [GamesController::class, 'index']);
 Route::post('/contact', [ContactController::class, 'store']); // Public Contact Us
+Route::post('/feedback', [FeedbackController::class, 'store']); // Public Feedback
 
 // ─── Protected Routes (Requires Login Token) ──────────────────
 Route::middleware('auth:sanctum')->group(function () {
@@ -43,7 +44,4 @@ Route::middleware('auth:sanctum')->group(function () {
     // Activity Logs
     Route::post('/activity-logs', [ActivityLogController::class, 'store']);
     Route::get('/activity-logs/recent-game', [ActivityLogController::class, 'getRecentGame']);
-
-    // Feedback
-    Route::post('/feedback', [FeedbackController::class, 'store']);
 });

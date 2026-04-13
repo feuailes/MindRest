@@ -2,6 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PredictionPage from "./Predictionpage";
 import { mlApi } from "../services/mlApi";
+import { motion, AnimatePresence } from "framer-motion";
+import { feedbackApi } from "../services/feedbackApi";
+
+const MOODS = [
+  { value: 1, emoji: "😫", label: "Stressed" },
+  { value: 2, emoji: "🙁", label: "Tired" },
+  { value: 3, emoji: "😐", label: "Okay" },
+  { value: 4, emoji: "🙂", label: "Good" },
+  { value: 5, emoji: "🤩", label: "Great" }
+];
 
 export default function Assessment() {
   const navigate = useNavigate();
@@ -14,6 +24,31 @@ export default function Assessment() {
   });
 
   const [activeFaq, setActiveFaq] = useState(null);
+
+  // Feedback State
+  const [rating, setRating] = useState(null);
+  const [comment, setComment] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    if (!rating) return;
+    setFeedbackLoading(true);
+
+    try {
+      await feedbackApi.submitFeedback(rating, comment);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+      setRating(null);
+      setComment("");
+    } catch (error) {
+      console.error("Feedback Error:", error);
+      alert("Failed to submit feedback. Please try again.");
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
 
   const screenTimeMap = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -171,6 +206,7 @@ export default function Assessment() {
             onClick={getPrediction}
             disabled={loading}
             className="w-full mt-14 bg-[#1d4d4f] hover:bg-[#2A9D8F] text-white font-black py-5 rounded-[1.5rem] transition-all shadow-[0_10px_30px_rgba(29,77,79,0.15)] hover:shadow-[0_15px_35px_rgba(42,157,143,0.3)] disabled:opacity-50 text-[11px] tracking-[0.3em] uppercase"
+          >
             {loading ? "Analyzing..." : "Get Your Result"}
           </button>
         </div>
@@ -179,15 +215,6 @@ export default function Assessment() {
         {/* --- EVIDENCE LAYER: FULL-WIDTH BANDED SECTIONS --- */}
         <div className="w-full flex flex-col mt-32">
           
-          {/* Transition Section: The Science Entry */}
-          <section className="w-full bg-white border-y border-slate-100 py-32">
-            <div className="max-w-5xl mx-auto px-6 text-center">
-              <span className="badge-pill bg-[#2A9D8F]/10 text-[#2A9D8F]">Scientific Foundation</span>
-              <h2 className="text-5xl font-black text-[#1d4d4f] tracking-tight mt-6 mb-4">What is the science behind it?</h2>
-              <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">MindRest merges behavioral data with predictive intelligence to help you map your energy patterns before you reach exhaustion.</p>
-            </div>
-          </section>
-
           {/* Section 1: The Behavioral Blueprint (Full-Width Light Band) */}
           <section className="w-full bg-[#f8fafc] py-32">
             <div className="max-w-6xl mx-auto px-6 text-center">
@@ -200,96 +227,56 @@ export default function Assessment() {
                   <div className="pillar-icon bg-[#2A9D8F]/10 text-[#2A9D8F]">
                     <span className="material-symbols-outlined !text-[30px]">desktop_windows</span>
                   </div>
-                  <h4 className="pillar-heading">Digital Engagement</h4>
-                  <p className="pillar-text">We map your screen time against rest intervals to measure the internal payload of your digital activities.</p>
+                  <h4 className="pillar-heading">Mental Energy</h4>
+                  <p className="pillar-text">Too much screen time can drain your brain's focus. We track your usage to see how much "mental fuel" you have left for the day.</p>
                 </div>
 
                 <div className="pillar-card border-slate-200/50">
                   <div className="pillar-icon bg-[#E76F51]/10 text-[#E76F51]">
                     <span className="material-symbols-outlined !text-[30px]">bedtime</span>
                   </div>
-                  <h4 className="pillar-heading">Recovery Cycles</h4>
-                  <p className="pillar-text">Sleep isn't just time; it's calibration. Our model weights sleep depth as the primary foundation for resilience.</p>
+                  <h4 className="pillar-heading">Sleep Recovery</h4>
+                  <p className="pillar-text">Sleep is your body's way of recharging. We look at your rest quality to see how well you’re bouncing back each night.</p>
                 </div>
 
                 <div className="pillar-card border-slate-200/50">
                   <div className="pillar-icon bg-[#1d4d4f]/10 text-[#1d4d4f]">
                     <span className="material-symbols-outlined !text-[30px]">bolt</span>
                   </div>
-                  <h4 className="pillar-heading">Stress Dynamics</h4>
-                  <p className="pillar-text">By tracking perceived stress, we find your "Exhaustion Peak"—the moment where mental load outweighs energy.</p>
+                  <h4 className="pillar-heading">Stress Patterns</h4>
+                  <p className="pillar-text">Stress isn't just a feeling—it's how your body reacts to pressure. We map these patterns to help you find your limit.</p>
                 </div>
 
                 <div className="pillar-card border-slate-200/50">
                   <div className="pillar-icon bg-[#264653]/10 text-[#264653]">
                     <span className="material-symbols-outlined !text-[30px]">mood</span>
                   </div>
-                  <h4 className="pillar-heading">Mood Baseline</h4>
-                  <p className="pillar-text">Your emotional baseline acts as a multiplier, amplifying or softening the impact of daily digital stress.</p>
+                  <h4 className="pillar-heading">Daily Outlook</h4>
+                  <p className="pillar-text">Your mood acts like a filter. A positive outlook can help handle stress, while a low mood can make digital pressure feel heavier.</p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Section 2: Predictive Technology (Full-Width Dark Band) */}
-          <section className="w-full bg-[#1d4d4f] py-32 relative overflow-hidden">
-            <div className="max-w-6xl mx-auto px-6 relative z-10 flex flex-col lg:flex-row items-center gap-20">
-              <div className="flex-1 text-center lg:text-left">
-                <span className="badge-pill bg-[#2A9D8F]/20 text-[#2A9D8F] mb-6">Algorithm Specs</span>
-                <h3 className="text-5xl font-black text-white mb-8 tracking-tight">Simple Behavioral Intelligence</h3>
-                <p className="text-slate-300 text-xl leading-relaxed mb-10">MindRest's AI doesn't just score you—it alerts you. By identifying non-linear patterns between habits and burnout, it helps you intervene <strong>before</strong> productivity drops.</p>
-                <div className="flex items-center justify-center lg:justify-start gap-4 text-[11px] font-bold tracking-[0.3em] uppercase text-[#E76F51]">
-                   <span className="w-12 h-px bg-[#E76F51]"></span>
-                   96% Prediction Score
-                </div>
-              </div>
-              
-              <div className="w-full lg:w-2/5 bg-white/5 backdrop-blur-xl rounded-[3rem] p-10 border border-white/10 shadow-3xl">
-                 <div className="flex flex-col gap-10">
-                    <div className="flex justify-between items-end">
-                       <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Model Precision</span>
-                       <span className="text-4xl font-black text-white leading-none">96.4<span className="text-lg text-[#2A9D8F]"> %</span></span>
-                    </div>
-                    <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden shadow-inner">
-                       <div className="w-[96.4%] h-full bg-[#E76F51] shadow-[0_0_20px_rgba(231,111,81,0.5)]"></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-6 text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                       <div className="flex flex-col gap-1">
-                          <span className="text-white text-lg">XGB-01</span>
-                          <span>Neural Model</span>
-                       </div>
-                       <div className="flex flex-col gap-1 text-right">
-                          <span className="text-white text-lg">Active</span>
-                          <span>Status</span>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-            </div>
-            {/* Visual Accents */}
-            <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] bg-[#2A9D8F]/5 blur-[120px] rounded-full"></div>
-            <div className="absolute bottom-[-100px] right-[-100px] w-[400px] h-[400px] bg-[#E76F51]/5 blur-[120px] rounded-full"></div>
-          </section>
-
-          {/* Section 3: Privacy Hub (Full-Width White Band) */}
+                 {/* Section 2: Privacy (Full-Width White Band) */}
           <section className="w-full bg-white py-32">
             <div className="max-w-4xl mx-auto px-6 text-center">
               <span className="badge-pill bg-[#1d4d4f]/5 text-[#1d4d4f]">Trust Architecture</span>
               <h3 className="text-4xl font-black mb-6 tracking-tight mt-6">Safe, Secure, and Private.</h3>
-              <p className="text-lg text-slate-500 mb-20 leading-relaxed">We protect your behavioral data with the same intensity we protect our own. MindRest is a tool for your benefit, not for data brokers.</p>
+              <p className="text-lg text-slate-500 mb-20 leading-relaxed">Your behavioral data is isolated and protected. MindRest is built for your benefit, not for data brokers.</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 {[
-                  { icon: "lock", label: "End-to-End Secure", desc: "Inputs are isolated and encrypted instantly." },
-                  { icon: "shield_person", label: "100% Anonymous", desc: "No identity data is ever linked to your patterns." },
-                  { icon: "cloud_off", label: "Local-First Storage", desc: "Your self-reflections stay on your device." }
+                  { icon: "lock", label: "Secure Data", desc: "Inputs are isolated and encrypted instantly." },
+                  { icon: "shield_person", label: "Anonymous", desc: "No identity data is linked to your wellness logs." },
+                  { icon: "cloud_off", label: "Private Logs", desc: "Assessments are stored exclusively for you." }
                 ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center group">
-                    <div className="w-24 h-24 rounded-[2rem] bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[#2A9D8F]/5 group-hover:text-[#2A9D8F] transition-all duration-300 shadow-sm mb-8">
-                      <span className="material-symbols-outlined !text-[36px]">{item.icon}</span>
+                  <div key={i} className="flex flex-col items-center group p-10 bg-[#fafafa] rounded-[2.5rem] border border-slate-100/50 transition-all hover:shadow-lg hover:bg-white text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center text-slate-300 group-hover:bg-[#2A9D8F]/5 group-hover:text-[#2A9D8F] transition-all duration-300 shadow-sm mb-8 border border-slate-50 mx-auto">
+                      <span className="material-symbols-outlined !text-[32px]">{item.icon}</span>
                     </div>
-                    <h5 className="text-xs font-black uppercase tracking-[0.2em] text-[#1d4d4f] mb-3">{item.label}</h5>
-                    <p className="text-[11px] text-slate-400 font-bold leading-relaxed">{item.desc}</p>
+                    <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1d4d4f] mb-3 text-center">{item.label}</h5>
+                    <p className="text-[11px] text-slate-400 font-bold leading-relaxed text-center">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -297,7 +284,7 @@ export default function Assessment() {
           </section>
 
           {/* Section 4: Clarity Hub (FAQ - Full-Width Soft Tint) */}
-          <section className="w-full bg-[#fdfdfd] py-32 border-t border-slate-100">
+          <section className="w-full bg-[#fcfcfc] py-32 border-t border-slate-100">
             <div className="max-w-3xl mx-auto px-6">
               <div className="text-center mb-20">
                 <span className="badge-pill bg-[#264653]/10 text-[#264653]">Support FAQ</span>
@@ -306,14 +293,15 @@ export default function Assessment() {
               
               <div className="flex flex-col gap-6">
                  {[
-                   { q: "Is this a real doctor's note?", a: "No. This is a behavioral wellness guide designed to help you manage digital load. It is not a clinical diagnosis or medical prescription." },
-                   { q: "How does the AI understand me?", a: "By identifying non-obvious links between your sleep cycles and your reported stress, the model spots trends that lead to digital exhaustion." },
-                   { q: "Can anyone see my results?", a: "Only you. MindRest is built as a private sanctuary for self-reflection. We do not sell or share behavioral logs." }
+                   { q: "What should I do if my risk level is high?", a: "A high risk indicates significant digital exhaustion. We recommend taking one of our Daily Resets or exploring the Journaling section to process your triggers." },
+                   { q: "How often should I take this assessment?", a: "For the most accurate tracking, we recommend a self-check once every 24 hours to monitor how your recovery cycles change." },
+                   { q: "How can I improve my screen-to-sleep ratio?", a: "Small shifts matter. Try putting your devices away 30 minutes before sleep and using our 'Deep Calm' exercise to lower your stress baseline." },
+                   { q: "Does this assessment replace a medical checkup?", a: "No. MindRest is a behavioral self-care tool. It is designed to aid your awareness, not to replace professional medical advice or clinical diagnosis." }
                  ].map((item, i) => (
                    <div 
                      key={i} 
                      onClick={() => setActiveFaq(activeFaq === i ? null : i)}
-                     className={`group bg-white rounded-[2.5rem] p-10 text-left border transition-all duration-300 cursor-pointer ${activeFaq === i ? 'border-[#2A9D8F] shadow-xl ring-1 ring-[#2A9D8F]/20' : 'border-slate-100'}`}
+                     className={`group bg-white rounded-[2rem] p-8 text-left border transition-all duration-300 cursor-pointer ${activeFaq === i ? 'border-[#2A9D8F] shadow-xl ring-1 ring-[#2A9D8F]/20' : 'border-slate-100'}`}
                    >
                       <h4 className="font-black text-[#1d4d4f] flex items-center justify-between text-base">
                         {item.q}
@@ -330,6 +318,73 @@ export default function Assessment() {
             </div>
           </section>
 
+          {/* Section 5: Experience Feedback (Integrated) */}
+          <section className="w-full bg-white py-32 border-t border-slate-50">
+            <div className="max-w-xl mx-auto px-6 text-center">
+              <span className="badge-pill bg-[#E76F51]/10 text-[#E76F51]">Personal Impact</span>
+              <h3 className="text-4xl font-black mt-6 tracking-tight">Share Your Experience</h3>
+              <p className="text-slate-500 font-medium text-sm mt-4 mb-16">How did this assessment feel? Your feedback helps us refine the digital sanctuary.</p>
+
+              <form onSubmit={handleFeedbackSubmit} className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-[0_20px_60px_rgba(29,77,79,0.04)] text-left flex flex-col gap-10">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#1D4D4F] uppercase tracking-widest mb-6 text-center">Select Your Current State</label>
+                  <div className="flex justify-center gap-4 md:gap-6">
+                    {MOODS.map((m) => (
+                      <div key={m.value} className="flex flex-col items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setRating(m.value)}
+                          className={`w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-3xl md:text-3xl transition-all rounded-full ${rating === m.value ? 'bg-[#fdfaf6] border-2 border-[#E76F51] shadow-md' : 'bg-slate-50 border border-slate-100 grayscale-[0.8] opacity-60 hover:grayscale-0 hover:opacity-100 shadow-sm'}`}
+                        >
+                          {m.emoji}
+                        </button>
+                        <div className="h-4 flex items-center justify-center">
+                          <span className={`text-[8px] uppercase tracking-widest font-black transition-opacity ${rating === m.value ? 'text-[#E76F51] opacity-100' : 'text-slate-400 opacity-0'}`}>
+                            {m.label}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#1D4D4F] uppercase tracking-widest mb-3">Improvement Suggestions</label>
+                  <textarea
+                    required
+                    rows="4"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="w-full bg-[#fcfdfd] border border-slate-200 rounded-[1.2rem] py-4 px-5 text-[#1D4D4F] focus:outline-none focus:border-[#1D4D4F] transition-all resize-none placeholder-slate-300 text-sm font-medium focus:bg-white"
+                    placeholder="Tell us what you'd love to see next..."
+                  ></textarea>
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={feedbackLoading}
+                  className="bg-[#1D4D4F] text-white py-4 rounded-[1.2rem] font-bold uppercase tracking-widest text-[11px] hover:bg-[#E76F51] transition-all shadow-xl disabled:opacity-50"
+                >
+                  {feedbackLoading ? "Sending..." : "Submit Experience"}
+                </button>
+              </form>
+            </div>
+          </section>
+
+          {/* Toast Notification */}
+          <AnimatePresence>
+            {showToast && (
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-10 right-10 bg-[#E76F51] text-white px-8 py-5 rounded-2xl shadow-2xl flex items-center gap-4 z-[9999] font-bold text-sm"
+              >
+                <span className="material-symbols-outlined">check_circle</span>
+                Feedback Received
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       {showPopup && (
