@@ -14,7 +14,8 @@ export default function PredictionPage(props) {
     screenTime: props.screenTime || 0,
     focus: props.focus || 0,
     sleep: props.sleep || 0,
-    stress: props.stress || 0
+    stress: props.stress || 0,
+    aiInsight: ""
   });
 
   useEffect(() => {
@@ -37,7 +38,8 @@ export default function PredictionPage(props) {
             screenTime: la.screen_time,
             sleep: la.sleep_hours,
             stress: la.stress_level,
-            focus: la.mood_rating
+            focus: la.mood_rating,
+            aiInsight: la.ai_insight || ""
           });
           setHistory(result.assessment_history || []);
         } else {
@@ -69,7 +71,7 @@ export default function PredictionPage(props) {
     return () => window.cancelAnimationFrame(animationId);
   }, [scoreNum]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-bold tracking-widest uppercase text-[10px]">Processing Neural Flow...</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-50 text-slate-400 font-bold tracking-widest uppercase text-[10px]">Analyzing Assessment Data...</div>;
 
   let contentKey = "Low";
   let themeColor = "#1D4D4F"; // UI Teal
@@ -81,42 +83,36 @@ export default function PredictionPage(props) {
 
   const getReason = () => {
     let reasons = [];
-    if (localData.screenTime > 6) reasons.push("Screen");
-    if (localData.stress >= 7) reasons.push("Stress");
-    if (localData.sleep >= 7) reasons.push("Sleep");
-    return reasons.length === 0 ? "Balanced" : reasons.slice(0, 2).join("+");
+    if (localData.screenTime > 6) reasons.push("Screen Time");
+    if (localData.stress > 6) reasons.push("High Stress");
+    if (localData.sleep > 6) reasons.push("Sleep");
+    if (localData.focus > 6) reasons.push("Low Mood");
+    return reasons.length === 0 ? "Balanced" : reasons.slice(0, 2).join(" + ");
   };
 
   const getNeuralInsight = () => {
-    const insights = [];
     const { stress, focus: mood, screenTime: st, sleep, passedRisk } = localData;
     const isHigh = passedRisk.toLowerCase().includes("high");
     const isModerate = passedRisk.toLowerCase().includes("moderate");
-
+    
+    let advice = "";
     if (isHigh) {
-      if (stress >= 8) insights.push("Your stress levels are very high; you need to stop and rest.");
-      if (st >= 8) insights.push("Too much screen time is making you extremely tired.");
-      if (sleep >= 8) insights.push("You are very tired from lack of sleep.");
-      if (mood >= 8) insights.push("Your emotional energy is very low right now.");
-      if (insights.length === 0) insights.push("Your exhaustion level is high; a break is needed.");
-      insights.push("You may need a break and recovery time.");
+      if (st > 6 && stress > 6) advice = `Your extreme exhaustion is driven by heavy screen use (${st}h) combined with intense stress.`;
+      else if (st > 6) advice = `Excessive screen time (${st}h) is the primary cause of your high exhaustion level today.`;
+      else if (stress > 6) advice = `High stress levels are overwhelming your focus. Immediate recovery is recommended.`;
+      else if (sleep > 6) advice = `Severe lack of sleep is significantly draining your cognitive energy.`;
+      else advice = "Your exhaustion markers have reached a critical level. Please prioritize rest.";
     } else if (isModerate) {
-      if (stress >= 7) insights.push("You're starting to get stressed; try taking a short break.");
-      if (st >= 7) insights.push("Your screen habits are starting to affect your energy.");
-      if (sleep >= 7) insights.push("A little more rest would help you feel better.");
-      if (insights.length === 0) insights.push("You're starting to feel tired; try balancing rest and work.");
-      insights.push("Try balancing screen time and rest.");
+      if (st > 6) advice = `Your screen usage (${st}h) is starting to strain your mental resilience.`;
+      else if (stress > 6) advice = `Rising stress levels are beginning to impact your daily focus.`;
+      else if (sleep > 6) advice = `A slight sleep deficit is contributing to your current fatigue.`;
+      else advice = "You are showing signs of moderate exhaustion. A short break would be beneficial.";
     } else {
-      // Low risk / Balanced
-      if (stress >= 8 || st >= 8) {
-        insights.push("Even though you're doing okay, watch your stress and screen time today.");
-      } else {
-        insights.push("Your habits are currently well-balanced.");
-      }
-      insights.push("Your current habits are stable.");
+      advice = (st > 6 || stress > 6) 
+        ? "You're managing well, but keep an eye on your screen time and stress levels."
+        : "Your digital habits and energy levels are currently well-balanced and stable.";
     }
-
-    return insights.join(" ");
+    return advice;
   };
 
   const getDynamicContent = () => {
@@ -149,9 +145,9 @@ export default function PredictionPage(props) {
       explanation: getNeuralInsight(),
       recoveryTime: "",
       steps: [
-        { title: "Power Posture", sub: "Align your neural axis.", path: "/exercises" },
+        { title: "Power Posture", sub: "Align your body for better focus.", path: "/exercises" },
         { title: "Focus Challenge", sub: "Quick reaction test.", path: "/games" },
-        { title: "Gratitude Journal", sub: "Positive neural framing.", path: "/journal" }
+        { title: "Gratitude Journal", sub: "Positive mental framing.", path: "/journal" }
       ]
     };
   };
@@ -183,7 +179,7 @@ export default function PredictionPage(props) {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
                 <span className="text-4xl font-black text-slate-800 tracking-tight">{scoreNum.toFixed(1)}</span>
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em]">Neural Index</span>
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em]">Exhaustion Score</span>
               </div>
            </div>
            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{content.label}</h2>
@@ -196,10 +192,10 @@ export default function PredictionPage(props) {
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Reasoning</span>
               <p className="text-xs font-bold text-slate-700 leading-tight">{getReason()}</p>
            </div>
-           <div className="bg-[#f8fafc] p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Insight</span>
-              <p className="text-[11px] font-medium text-slate-500 italic leading-snug">"{content.explanation}"</p>
-           </div>
+            <div className="bg-[#f8fafc] p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Analysis</span>
+              <p className="text-[11px] font-medium text-slate-500 italic leading-snug">"{localData.aiInsight || content.explanation}"</p>
+            </div>
         </div>
 
         {/* PLAN SECTION (INTERACTIVE) */}

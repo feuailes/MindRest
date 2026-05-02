@@ -235,6 +235,7 @@ export default function Dashboard() {
           <h3 className="card-title">7-Day Stress & Energy Trend</h3>
           <span className="trend-badge">Analysis Live</span>
         </div>
+        <p className="chart-subtitle" style={{ margin: '-15px 0 20px 0', fontSize: '12px' }}>Factual monitoring of your mental load relative to daily screen exposure.</p>
         <div className="chart-box" style={{ height: '220px' }}>
           <Line data={trendData} options={{ 
             responsive: true, 
@@ -259,24 +260,57 @@ export default function Dashboard() {
           <p className="card-note">A score based on your mood and daily activity.</p>
         </div>
 
-        {/* AI INSIGHT */}
-        <div className="card bento-card ai-bento">
-          <h3 className="card-title">Personalized Insights</h3>
-           <div className="ai-content">
-               <div className="ai-pulp">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M12 7v5l2 2"/></svg>
+        {/* RIGHT COLUMN: GUIDANCE + BREAK */}
+        <div className="bento-col">
+          {/* PERSONALIZED GUIDANCE CARD */}
+          <div className="card bento-card guidance-bento">
+            <div className="guidance-header">
+               <h3 className="card-title">Personalized Guidance</h3>
+               <span className="guidance-tag">Insight Hub</span>
+            </div>
+            <div className="guidance-content">
+               <div className="guidance-icon-box">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+               </div>
+               <div className="insight-bubble">
+                  {insightLoading ? (
+                     <div className="guidance-shimmer">
+                        <div className="shimmer-line"></div>
+                        <div className="shimmer-line short"></div>
+                     </div>
+                  ) : (
+                     <p className="guidance-text">"{aiInsight}"</p>
+                  )}
+               </div>
+            </div>
+            <div className="guidance-footer">
+               <p className="footer-note">Based on your activity patterns and recent logs.</p>
+            </div>
+          </div>
+
+          {/* PREDICTIVE BREAK CARD */}
+          {data?.break_prediction?.recommended_time ? (
+            <div className="card bento-card break-bento animate-fade-in shadow-premium">
+              <h3 className="card-title">Optimal Break Window</h3>
+              <div className="break-content">
+                 <div className="break-icon-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                 </div>
+                 <div className="break-details">
+                    <span className="break-time-val">{data.break_prediction.recommended_time}</span>
+                    <p className="break-explanation">{data.break_prediction.message}</p>
+                 </div>
               </div>
-              <div className="ai-text-box">
-                 {insightLoading ? <div className="shimmer-text">Updating insights...</div> : <p>"{aiInsight}"</p>}
+              <div className="break-footer">
+                 <span className="footer-tag">Proactive Care</span>
               </div>
-           </div>
-           <div className="quick-nav-box">
-              <Link to="/assessment" className="primary-action">New Assessment</Link>
-              <div className="secondary-row">
-                 <Link to="/games" className="nav-btn-sec">Mind Games</Link>
-                 <Link to="/exercises" className="nav-btn-sec">Exercises</Link>
-              </div>
-           </div>
+            </div>
+          ) : (
+            <div className="card bento-card break-bento empty-break">
+              <h3 className="card-title">Break Prediction</h3>
+              <p className="empty-msg">{data?.break_prediction?.message || "Logging more entries will unlock predictions."}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -470,10 +504,12 @@ export default function Dashboard() {
         .stat-val { display: block; font-size: 1.1rem; font-weight: 900; color: #1e293b; }
         .stat-lab { font-size: 11px; font-weight: 750; color: #94a3b8; text-transform: uppercase; }
 
-        .card { background: white; border-radius: 32px; border: 1px solid #f1f5f9; padding: 32px; margin-bottom: 30px; }
+        .card { background: white; border-radius: 32px; border: 1px solid #f1f5f9; padding: 24px; margin-bottom: 30px; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .card-title { margin: 0; font-size: 1.1rem; font-weight: 850; color: #1e293b; }
         .trend-badge { font-size: 10px; font-weight: 900; background: #ecfdf5; color: #059669; padding: 5px 12px; border-radius: 100px; text-transform: uppercase; }
+        
+        .bento-col { display: flex; flex-direction: column; gap: 30px; width: 100%; }
 
         .bento-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
         .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
@@ -487,12 +523,34 @@ export default function Dashboard() {
         .g-label { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-top: 5px; }
         .card-note { font-size: 12px; color: #94a3b8; margin-top: 20px; line-height: 1.5; }
 
-        .ai-bento { align-items: stretch; text-align: left; background: #264653; color: white; border: none; }
-        .ai-bento .card-title { color: white; opacity: 0.6; }
-        .ai-content { display: flex; gap: 20px; margin: 25px 0; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; }
-        .ai-pulp { flex-shrink: 0; width: 44px; height: 44px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .ai-text-box { color: rgba(255,255,255,0.9); font-style: italic; font-size: 15px; margin: 0; line-height: 1.6; }
+        .guidance-bento { background: linear-gradient(135deg, #264653 0%, #1d353f 100%); color: white; border: none; align-items: flex-start !important; text-align: left !important; display: flex; flex-direction: column; }
+        .guidance-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .guidance-bento .card-title { color: white !important; opacity: 0.8 !important; pointer-events: none; }
+        .guidance-tag { font-size: 10px; font-weight: 950; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.6); }
+        .guidance-content { display: flex; gap: 20px; width: 100%; align-items: flex-start; }
+        .guidance-icon-box { flex-shrink: 0; width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4ADE80; }
+        .insight-bubble { flex: 1; padding: 24px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; backdrop-filter: blur(10px); }
+        .guidance-text { font-size: 1.05rem; line-height: 1.6; color: rgba(255,255,255,0.95); font-style: italic; margin: 0; font-weight: 500; }
+        .guidance-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%; }
+        .footer-note { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600; margin: 0; }
         
+        .guidance-shimmer { display: flex; flex-direction: column; gap: 10px; }
+        .shimmer-line { height: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; width: 100%; position: relative; overflow: hidden; }
+        .shimmer-line.short { width: 60%; }
+        .shimmer-line::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: guidance-shimmer 1.5s infinite; }
+        @keyframes guidance-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        
+        .break-bento { background: #fdf2f2; border: 1px solid #fee2e2; align-items: flex-start !important; text-align: left !important; }
+        .break-bento .card-title { color: #991b1b !important; margin-bottom: 20px; }
+        .break-content { display: flex; gap: 15px; align-items: flex-start; margin-bottom: 20px; }
+        .break-icon-box { background: #fee2e2; color: #ef4444; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .break-time-val { display: block; font-size: 1.8rem; font-weight: 950; color: #1e293b; line-height: 1.2; }
+        .break-explanation { font-size: 13px; color: #64748b; line-height: 1.5; margin-top: 4px; font-weight: 600; }
+        .break-footer { margin-top: auto; }
+        .footer-tag { font-size: 10px; font-weight: 950; text-transform: uppercase; color: #ef4444; background: #fecaca40; padding: 4px 10px; border-radius: 100px; }
+        .empty-break { background: #f8fafc; opacity: 0.7; border-style: dashed; }
+        .empty-msg { font-size: 13px; color: #94a3b8; font-style: italic; margin-top: 10px; font-weight: 600; }
+
         .quick-nav-box { display: flex; flex-direction: column; gap: 15px; align-items: center; }
         .primary-action { background: #E76F51; color: white; padding: 18px 40px; border-radius: 18px; text-decoration: none; font-weight: 850; font-size: 14px; text-align: center; width: fit-content; }
         .secondary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }

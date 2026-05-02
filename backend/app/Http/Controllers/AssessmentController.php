@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Services\UserInsightService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -48,20 +49,23 @@ class AssessmentController extends Controller
             $riskLabel = "Analysis Pending"; 
         }
 
-        $assessment = Assessment::create([
-            'user_id'      => $request->user()->id,
-            'sleep_hours'  => $data['sleep_hours'],
-            'stress_level' => $data['stress_level'],
-            'screen_time'  => $data['screen_time'],
-            'mood_rating'  => $data['mood_rating'],
-            'risk_level'   => $riskLabel, 
-            'created_at'   => now(),
-        ]);
+        // Generate Gemini Insight for this specific assessment
+        try {
+            $insightService = app(UserInsightService::class);
+            $aiInsight = $insightService->generateSingleAssessmentInsight($assessment);
+            if ($aiInsight) {
+                $assessment->update(['ai_insight' => $aiInsight]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Gemini Insight failed for assessment {$assessment->id}: " . $e->getMessage());
+            $aiInsight = "";
+        }
 
         return response()->json([
             'success' => true,
             'assessment' => $assessment,
-            'risk_label' => $riskLabel 
+            'risk_label' => $riskLabel,
+            'ai_insight' => $aiInsight
         ], 201);
     }
 

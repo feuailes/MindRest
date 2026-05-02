@@ -76,8 +76,12 @@ class DashboardController extends Controller
         $avgMood = $history->avg('mood_rating') ?? 0;
         $streak  = $this->calculateStreak($user->id);
 
+        $latest = $history->first();
         $healthScore = $this->calculateHealthScore(
-            $history->first()?->mood_rating ?? $avgMood,
+            $latest?->mood_rating ?? $avgMood,
+            $latest?->stress_level ?? 5,
+            $latest?->sleep_hours ?? 5,
+            $latest?->screen_time ?? 5,
             JournalEntry::where('user_id', $user->id)->count(),
             ActivityLog::where('user_id', $user->id)->where('activity_type', 'exercise')->count(),
             ActivityLog::where('user_id', $user->id)->where('activity_type', 'game')->count()
@@ -92,6 +96,7 @@ class DashboardController extends Controller
             'sleep_mood_data'      => $sleepMoodData,
             'recovery_impact'      => $recoveryImpact,
             'digital_health_score' => $healthScore,
+            'break_prediction'     => $insightService->predictOptimalBreak($user->id),
         ]);
     }
 
@@ -117,14 +122,25 @@ class DashboardController extends Controller
      * 70% from mood stability, 30% from engagement activity.
      */
     private function calculateHealthScore(
-        float $moodScore,
+        float $mood,
+        float $stress,
+        float $sleep,
+        float $screen,
         int $journals,
         int $exercises,
         int $games
     ): array {
-        $stressImpact   = (10 - min($moodScore, 10)) * 7;
-        $activityImpact = ($journals * 2) + ($exercises * 5) + ($games * 3);
-        $rawScore       = (int) min(max($stressImpact + $activityImpact, 0), 100);
+        // All metrics are 1 (Safe) to 10 (Exhaustion/Worst)
+        // Composite exhaustion (higher is worse)
+        $exhaustion = ($mood + $stress + $sleep + $screen) / 4;
+        
+        // Resilience factor: Activity reduces exhaustion impact slightly
+        $activityBonus = ($journals * 0.5) + ($exercises * 1.5) + ($games * 1);
+        
+        // Final health score: 100 is perfect wellness, 0 is full exhaustion
+        // Inverse the exhaustion (10 -> 0)
+        $rawScore = (int)((10 - $exhaustion) * 10) + $activityBonus;
+        $rawScore = (int) min(max($rawScore, 0), 100);
 
         $label = match(true) {
             $rawScore > 85 => 'Excellent',

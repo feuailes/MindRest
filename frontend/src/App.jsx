@@ -26,7 +26,7 @@ import Feedback from "./pages/Feedback";
 import Contact from "./pages/Contact";
 
 
-// ✅ ADD THIS HERE
+
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
 

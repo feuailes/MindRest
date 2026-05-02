@@ -122,7 +122,7 @@ export default function About() {
               <div className="value-icon-box bg-purple">
                 <span className="material-symbols-outlined">auto_awesome</span>
               </div>
-              <h3 className="value-title">Personalisation</h3>
+              <h3 className="value-title">Personalization</h3>
               <p className="value-desc">Tailored to your unique needs and journey.</p>
             </div>
             <div className="about-value-card">
